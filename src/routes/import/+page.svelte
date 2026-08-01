@@ -1083,8 +1083,9 @@
                   type="text"
                   id="gmaps-query"
                   bind:value={gmapsQuery}
+                  oninput={(e) => checkQuerySearchHistory((e.target as HTMLInputElement).value)}
                   onkeydown={(e) => { if (e.key === 'Enter') startGmapsScraper(); }}
-                  placeholder="z.B. Zahnarzt 10115 Berlin, Sanitär Notdienst München"
+                  placeholder="z.B. Restaurant in Leipzig, Zahnarzt 10115 Berlin, Sanitär Notdienst München"
                   disabled={gmapsStatus === 'scraping'}
                   class="bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] focus:border-[var(--color-accent-emerald)] rounded-[var(--radius-md)] px-3.5 py-2.5 text-xs text-[var(--color-ink-primary)] placeholder-[var(--color-ink-muted)] outline-none transition-colors"
                 />
@@ -1095,7 +1096,7 @@
                     <div class="flex items-center gap-2.5">
                       <AlertTriangle size={18} class="text-amber-400 shrink-0" />
                       <div>
-                        <span class="font-bold text-amber-200">Suchbegriff bereits gesucht!</span>
+                        <span class="font-bold text-amber-200">Semantisch ähnlicher Suchbegriff bereits gesucht!</span>
                         <p class="text-[11px] text-amber-300/80">
                           "{currentQueryHistoryWarning.query}" wurde am {currentQueryHistoryWarning.lastSearchDate || 'vor Kurzem'} gesucht ({currentQueryHistoryWarning.leadsCount} Leads in der Datenbank).
                         </p>
@@ -1114,19 +1115,59 @@
                 {/if}
 
                 <!-- SMART GERMAN TERRITORY & CITY DISCOVERY SELECTOR -->
-                <div class="bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] rounded-[var(--radius-md)] p-3 flex flex-col gap-2.5">
+                <div class="bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] rounded-[var(--radius-md)] p-3 flex flex-col gap-3">
                   <div class="flex items-center justify-between gap-2 flex-wrap border-b border-[var(--color-border-subtle)] pb-2">
                     <span class="text-xs font-[var(--font-excon)] font-bold text-[var(--color-ink-primary)] flex items-center gap-1.5">
                       <MapPin size={13} class="text-[var(--color-accent-emerald)]" />
-                      Intelligente Städte- & Bundesland-Auswahl (1-Klick)
+                      Intelligente Städte- & Branchen-Auswahl (Alle Betriebe)
                     </span>
                     <span class="text-[10px] font-mono text-[var(--color-ink-muted)]">
-                      80+ Deutsche Städte • Automatische Such-Historien Prüfung
+                      80+ Deutsche Städte • Semantische Such-Historien Prüfung
                     </span>
                   </div>
 
-                  <!-- Bundesland / Region Tabs -->
+                  <!-- 1. FLEXIBLE NICHE / BRANCHE SELECTOR & CUSTOM INPUT -->
+                  <div class="flex flex-col gap-1.5 border-b border-[var(--color-border-subtle)] pb-2.5">
+                    <span class="text-[11px] font-[var(--font-excon)] font-semibold text-[var(--color-ink-secondary)]">
+                      1. Ziel-Branche wählen oder frei eingeben:
+                    </span>
+
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <input
+                        type="text"
+                        bind:value={selectedNichePrefix}
+                        placeholder="z.B. Restaurant, Zahnarzt, Solarteur..."
+                        class="bg-[var(--color-surface-lift)] border border-[var(--color-border-focus)] rounded px-2.5 py-1 text-xs text-[var(--color-ink-primary)] font-bold outline-none w-48 focus:border-[var(--color-accent-emerald)]"
+                      />
+
+                      {#each [
+                        { label: 'Restaurant', val: 'Restaurant' },
+                        { label: 'Bar & Gastro', val: 'Bar' },
+                        { label: 'Zahnarzt', val: 'Zahnarzt' },
+                        { label: 'Sanitär', val: 'Sanitär' },
+                        { label: 'Tischler', val: 'Tischler' },
+                        { label: 'Steuerberater', val: 'Steuerberater' },
+                        { label: 'Autowerkstatt', val: 'Autowerkstatt' },
+                        { label: 'Friseur', val: 'Friseur' },
+                        { label: 'Dachdecker', val: 'Dachdecker' },
+                        { label: 'Physiotherapie', val: 'Physiotherapie' }
+                      ] as n}
+                        <button
+                          type="button"
+                          onclick={() => { selectedNichePrefix = n.val; gmapsIndustry = n.label; }}
+                          class="px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all cursor-pointer {selectedNichePrefix === n.val ? 'bg-[var(--color-accent-emerald)] text-[#052E16]' : 'bg-[var(--color-surface-lift)] border border-[var(--color-border-subtle)] text-[var(--color-ink-secondary)] hover:text-[var(--color-ink-primary)]'}"
+                        >
+                          {n.label}
+                        </button>
+                      {/each}
+                    </div>
+                  </div>
+
+                  <!-- 2. Bundesland / Region Tabs -->
                   <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[11px] font-[var(--font-excon)] font-semibold text-[var(--color-ink-secondary)] mr-1">
+                      2. Region:
+                    </span>
                     {#each GERMAN_BUNDESLAENDER as state}
                       {@const isSel = selectedBundeslandId === state.id}
                       <button
@@ -1139,11 +1180,14 @@
                     {/each}
                   </div>
 
-                  <!-- Cities in Selected Region -->
+                  <!-- 3. Cities in Selected Region -->
                   <div class="flex items-center gap-1.5 flex-wrap pt-1">
                     {#each activeStateObj.cities as city}
                       {@const queryForCity = `${selectedNichePrefix} ${city}`}
-                      {@const isAlreadySearched = searchHistoryList.some(h => h.query.toLowerCase().includes(city.toLowerCase()))}
+                      {@const isAlreadySearched = searchHistoryList.some(h => {
+                        const cleanH = h.query.toLowerCase();
+                        return cleanH.includes(city.toLowerCase()) && (cleanH.includes(selectedNichePrefix.toLowerCase()) || selectedNichePrefix.length < 3);
+                      })}
                       
                       <button
                         type="button"
@@ -1153,7 +1197,7 @@
                         }}
                         disabled={gmapsStatus === 'scraping'}
                         class="px-2.5 py-1 rounded-[var(--radius-sm)] text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 border active:scale-95 {isAlreadySearched ? 'bg-[var(--color-surface-panel)] text-[var(--color-ink-muted)] border-[var(--color-border-subtle)] opacity-70' : 'bg-[var(--color-surface-lift)] hover:bg-[var(--color-border-subtle)] text-[var(--color-accent-emerald)] border-[var(--color-border-focus)] shadow-sm'}"
-                        title={isAlreadySearched ? `Gegen ${city} wurde bereits gesucht` : `Klicken, um ${queryForCity} einzufügen`}
+                        title={isAlreadySearched ? `Gegen ${selectedNichePrefix} in ${city} wurde bereits gesucht` : `Klicken, um "${queryForCity}" einzufügen`}
                       >
                         <span>{city}</span>
                         {#if isAlreadySearched}

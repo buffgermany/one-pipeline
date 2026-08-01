@@ -1,9 +1,39 @@
 import { db } from '$lib/server/db';
 import { searchHistory, leads } from '$lib/server/db/schema';
 import type { RequestHandler } from '@sveltejs/kit';
-import { desc, like, or, sql } from 'drizzle-orm';
+import { desc, like, and, or, sql } from 'drizzle-orm';
 
-// GET /api/scraper/history - Fetch past search history + check if query/city was already searched
+const GERMAN_STOP_WORDS = new Set(['in', 'im', 'bei', 'nach', 'aus', 'von', 'der', 'die', 'das', 'und', '&', 'fuer', 'für', 'um', 'notdienst']);
+
+function normalizeSearchTokens(query: string): string[] {
+  if (!query) return [];
+  return query
+    .toLowerCase()
+    .replace(/[^a-z0-9äöüß\s]/gi, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 1 && !GERMAN_STOP_WORDS.has(w))
+    .map(w => {
+      // Basic German plural / suffix stemmer
+      if (w.endsWith('en') && w.length > 5) return w.slice(0, -2);
+      if (w.endsWith('s') && w.length > 4) return w.slice(0, -1);
+      if (w.endsWith('e') && w.length > 4) return w.slice(0, -1);
+      return w;
+    });
+}
+
+// Check if two query token sets match semantically
+function areQueriesMatching(tokensA: string[], tokensB: string[]): boolean {
+  if (tokensA.length === 0 || tokensB.length === 0) return false;
+  
+  // Check token intersection
+  const setB = new Set(tokensB);
+  const matchCount = tokensA.filter(t => setB.has(t) || tokensB.some(b => b.includes(t) || t.includes(b))).length;
+  
+  const minRequired = Math.min(tokensA.length, tokensB.length);
+  return matchCount >= minRequired;
+}
+
+// GET /api/scraper/history - Fetch past search history + smart semantic duplicate query check
 export const GET: RequestHandler = async ({ url }) => {
   try {
     const q = url.searchParams.get('query');
@@ -12,36 +42,38 @@ export const GET: RequestHandler = async ({ url }) => {
       .select()
       .from(searchHistory)
       .orderBy(desc(searchHistory.createdAt))
-      .limit(50);
+      .limit(100);
 
-    // If checking a specific query/city
     let previousMatch = null;
     let existingLeadsCount = 0;
 
     if (q && q.trim()) {
-      const cleanQ = q.trim().toLowerCase();
-      
-      const match = history.find(h => h.query.toLowerCase() === cleanQ || cleanQ.includes(h.query.toLowerCase()));
-      if (match) {
-        previousMatch = match;
-      }
+      const targetTokens = normalizeSearchTokens(q);
 
-      // Check how many leads in DB match this query or city
-      const words = cleanQ.split(/\s+/).filter(w => w.length > 2);
-      if (words.length > 0) {
-        const conditions = words.map(w => or(
-          like(leads.name, `%${w}%`),
-          like(leads.address, `%${w}%`),
-          like(leads.industry, `%${w}%`),
-          like(leads.category, `%${w}%`)
+      if (targetTokens.length > 0) {
+        // 1. Smart Semantic Search in Search History
+        previousMatch = history.find(h => {
+          const histTokens = normalizeSearchTokens(h.query);
+          return areQueriesMatching(targetTokens, histTokens);
+        }) || null;
+
+        // 2. Smart Lead Count in SQLite Database for matching Category + City
+        // E.g. targetTokens = ['restaurant', 'leipzig']
+        const whereConditions = targetTokens.map(token => or(
+          like(leads.name, `%${token}%`),
+          like(leads.address, `%${token}%`),
+          like(leads.industry, `%${token}%`),
+          like(leads.category, `%${token}%`)
         ));
 
-        const countResult = await db
-          .select({ count: sql<number>`count(*)` })
-          .from(leads)
-          .where(sql`(${sql.raw(conditions.map(() => '1').join(' OR '))})`);
+        if (whereConditions.length > 0) {
+          const countResult = await db
+            .select({ count: sql<number>`count(*)` })
+            .from(leads)
+            .where(and(...whereConditions));
 
-        existingLeadsCount = Number(countResult[0]?.count || 0);
+          existingLeadsCount = Number(countResult[0]?.count || 0);
+        }
       }
     }
 
