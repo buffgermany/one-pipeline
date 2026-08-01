@@ -22,11 +22,29 @@
   import Share2 from 'lucide-svelte/icons/share-2';
   import UserCheck from 'lucide-svelte/icons/user-check';
   import Code from 'lucide-svelte/icons/code';
+  import Sparkles from 'lucide-svelte/icons/sparkles';
 
   let leadsList = $state<any[]>([]);
   let industriesList = $state<any[]>([]);
   let loading = $state(true);
   let isDeleting = $state(false);
+  let selectedLeadIds = $state<string[]>([]);
+
+  function toggleSelectLead(id: string) {
+    if (selectedLeadIds.includes(id)) {
+      selectedLeadIds = selectedLeadIds.filter(i => i !== id);
+    } else {
+      selectedLeadIds = [...selectedLeadIds, id];
+    }
+  }
+
+  function toggleSelectAll() {
+    if (selectedLeadIds.length === leadsList.length && leadsList.length > 0) {
+      selectedLeadIds = [];
+    } else {
+      selectedLeadIds = leadsList.map(l => l.id);
+    }
+  }
 
   // Derived count of leads that have a website
   let leadsWithWebsiteCount = $derived(
@@ -112,6 +130,31 @@
     setTimeout(() => copiedPhoneId = null, 2000);
   }
 
+  let isEnriching = $state(false);
+  let enrichSuccessMessage = $state<string | null>(null);
+
+  async function runEnrichAndAudit(leadIds?: string[], action: 'enrich' | 'audit' | 'both' = 'both') {
+    isEnriching = true;
+    enrichSuccessMessage = null;
+    try {
+      const res = await fetch('/api/leads/enrich-audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadIds, action })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        enrichSuccessMessage = data.message || `${data.updatedCount} Leads wurden erfolgreich analysiert & aktualisiert.`;
+        await fetchLeads();
+        setTimeout(() => enrichSuccessMessage = null, 5000);
+      }
+    } catch (e: any) {
+      console.error('Failed to run enrich & audit:', e);
+    } finally {
+      isEnriching = false;
+    }
+  }
+
   function toggleSort(field: string) {
     if (sortBy === field) {
       sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
@@ -148,7 +191,38 @@
     </div>
 
     <!-- Top Action Buttons -->
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2 flex-wrap">
+      {#if selectedLeadIds.length > 0}
+        <button
+          onclick={() => runEnrichAndAudit(selectedLeadIds, 'both')}
+          disabled={isEnriching}
+          class="flex items-center gap-1.5 bg-emerald-500 text-neutral-950 hover:bg-emerald-400 px-3.5 py-1.5 rounded-[var(--radius-md)] text-xs font-bold transition-all cursor-pointer disabled:opacity-50 shadow-md animate-bounce"
+        >
+          <Sparkles size={14} class={isEnriching ? 'animate-spin' : ''} />
+          <span>⚡ Ausgewählte ({selectedLeadIds.length}) Anreichern & Auditen</span>
+        </button>
+      {/if}
+
+      <button
+        onclick={() => runEnrichAndAudit(undefined, 'enrich')}
+        disabled={isEnriching}
+        class="flex items-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-[var(--radius-md)] text-xs text-emerald-400 font-bold transition-all cursor-pointer disabled:opacity-50"
+        title="Sucht nach fehlenden Inhabern, Impressum-Telefonnummern und E-Mails für alle unvollständigen Leads"
+      >
+        <Sparkles size={14} class={isEnriching ? 'animate-spin' : ''} />
+        <span>⚡ Unangereicherte Anreichern</span>
+      </button>
+
+      <button
+        onclick={() => runEnrichAndAudit(undefined, 'audit')}
+        disabled={isEnriching}
+        class="flex items-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-[var(--radius-md)] text-xs text-amber-300 font-bold transition-all cursor-pointer disabled:opacity-50"
+        title="Führt ein kostenloses Website-Health & Conversion-Audit für alle Leads ohne Score aus"
+      >
+        <Search size={14} class={isEnriching ? 'animate-spin' : ''} />
+        <span>🔍 Websites Auditen</span>
+      </button>
+
       {#if leadsWithWebsiteCount > 0}
         <button
           onclick={deleteLeadsWithWebsite}
@@ -166,11 +240,20 @@
         onclick={fetchLeads}
         class="flex items-center gap-2 bg-[var(--color-surface-panel)] hover:bg-[var(--color-surface-lift)] border border-[var(--color-border-subtle)] px-3 py-1.5 rounded-[var(--radius-md)] text-xs text-[var(--color-ink-secondary)] hover:text-white transition-all cursor-pointer"
       >
-        <RefreshCw size={14} class={loading ? 'animate-spin' : ''} />
+        <RefreshCw size={14} class={loading || isEnriching ? 'animate-spin' : ''} />
         <span>Liste aktualisieren</span>
       </button>
     </div>
   </div>
+
+  {#if enrichSuccessMessage}
+    <div class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between shadow-lg animate-fadeIn">
+      <div class="flex items-center gap-2">
+        <CheckCircle2 size={18} class="text-emerald-400" />
+        <span>{enrichSuccessMessage}</span>
+      </div>
+    </div>
+  {/if}
 
   <!-- Search & Filter Controls -->
   <Card class="p-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-[var(--color-surface-panel)]">
@@ -247,6 +330,9 @@
       <table class="w-full text-left border-collapse">
         <thead>
           <tr class="border-b border-[var(--color-border-subtle)] bg-[var(--color-page-void)] text-[11px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-ink-muted)] select-none">
+            <th class="py-3 px-3 w-8 text-center">
+              <input type="checkbox" checked={selectedLeadIds.length > 0 && selectedLeadIds.length === leadsList.length} onchange={toggleSelectAll} class="rounded cursor-pointer" />
+            </th>
             <th class="py-3 px-4">Unternehmen / Firma</th>
             <th class="py-3 px-4">Branche / Kategorie</th>
             <th class="py-3 px-4 cursor-pointer hover:text-white" onclick={() => toggleSort('rating')}>
@@ -282,8 +368,13 @@
             </tr>
           {:else}
             {#each leadsList as b}
-              <tr class="hover:bg-[var(--color-surface-lift)]/60 transition-colors group">
+              <tr class="hover:bg-[var(--color-surface-lift)]/60 transition-colors group {selectedLeadIds.includes(b.id) ? 'bg-emerald-500/5' : ''}">
                 
+                <!-- Checkbox -->
+                <td class="py-3.5 px-3 text-center">
+                  <input type="checkbox" checked={selectedLeadIds.includes(b.id)} onchange={() => toggleSelectLead(b.id)} class="rounded cursor-pointer" />
+                </td>
+
                 <!-- Company Name & Website -->
                 <td class="py-3.5 px-4 font-medium text-[var(--color-ink-primary)]">
                   <div class="flex flex-col min-w-0 gap-0.5">
@@ -434,14 +525,28 @@
 
                 <!-- Actions -->
                 <td class="py-3.5 px-4 text-right whitespace-nowrap">
-                  <button 
-                    onclick={() => deleteSingleLead(b.id, b.name)}
-                    disabled={isDeleting}
-                    class="p-1.5 rounded-[var(--radius-md)] bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer disabled:opacity-50"
-                    title="Unternehmen löschen"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  <div class="flex items-center justify-end gap-2">
+                    {#if b.website}
+                      <button
+                        onclick={() => runEnrichAndAudit([b.id], 'both')}
+                        disabled={isEnriching}
+                        class="px-2 py-1 rounded-[var(--radius-md)] bg-[var(--color-surface-lift)] hover:bg-[var(--color-border-subtle)] text-[var(--color-accent-emerald)] border border-[var(--color-border-focus)] transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1 text-[11px] font-bold"
+                        title="Website Inhaber, Kontakte & Audit-Score für diesen Lead jetzt nachladen"
+                      >
+                        <Sparkles size={12} class={isEnriching ? 'animate-spin' : ''} />
+                        <span>Anreichern & Auditen</span>
+                      </button>
+                    {/if}
+
+                    <button 
+                      onclick={() => deleteSingleLead(b.id, b.name)}
+                      disabled={isDeleting}
+                      class="p-1.5 rounded-[var(--radius-md)] bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer disabled:opacity-50"
+                      title="Unternehmen löschen"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </td>
 
               </tr>
