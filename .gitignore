@@ -9,7 +9,7 @@ node_modules
 /build
 
 # Database & Persistent Data
-data/
+/data/
 *.db
 *.db-wal
 *.db-shm
