@@ -17,16 +17,16 @@
 }
 
 @theme {
-  /* Colors - Linear Dark Cockpit Palette (from DESIGN.md) */
-  --color-page-void: #0B0C0E;
-  --color-surface-panel: #121316;
-  --color-surface-lift: #181A1F;
-  --color-border-subtle: #1F2026;
-  --color-border-focus: #2E313B;
+  /* Colors - Sleek Dark Void Palette (Matching Login Language) */
+  --color-page-void: #07080B;
+  --color-surface-panel: #0E1017;
+  --color-surface-lift: #151822;
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-focus: rgba(16, 185, 129, 0.5);
   
-  --color-ink-primary: #F4F4F6;
-  --color-ink-secondary: #8C8F9A;
-  --color-ink-muted: #4A4D57;
+  --color-ink-primary: #F9FAFB;
+  --color-ink-secondary: #9CA3AF;
+  --color-ink-muted: #4B5563;
 
   --color-accent-emerald: #10B981;
   --color-emerald-tint: rgba(16, 185, 129, 0.12);
@@ -36,13 +36,13 @@
   --color-status-cyan: #06B6D4;
   --color-status-rose: #F43F5E;
 
-  /* Legacy alias mappings for backward compatibility */
-  --color-off-white-ink: #F4F4F6;
-  --color-graphite-card: #121316;
-  --color-slate-matte: #0B0C0E;
-  --color-ash-step: #1F2026;
-  --color-stone-lift: #2E313B;
-  --color-sand-label: #8C8F9A;
+  /* Legacy alias mappings */
+  --color-off-white-ink: #F9FAFB;
+  --color-graphite-card: #0E1017;
+  --color-slate-matte: #07080B;
+  --color-ash-step: rgba(255, 255, 255, 0.08);
+  --color-stone-lift: #151822;
+  --color-sand-label: #9CA3AF;
   --color-spray-wash: #10B981;
 
   /* Typography */
@@ -57,58 +57,36 @@
   --text-heading: 24px;
   --text-display: 32px;
 
-  /* Spacing Scale (6px base grid) */
-  --spacing-1: 3px;
-  --spacing-2: 6px;
-  --spacing-3: 12px;
-  --spacing-4: 16px;
-  --spacing-5: 24px;
-  --spacing-6: 36px;
-  --spacing-7: 48px;
-
   /* Border Radius */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
   --radius-full: 9999px;
-
-  /* Premium Borders & Shadows */
-  --border-subtle: 1px solid var(--color-border-subtle);
-  --border-focus: 1px solid var(--color-border-focus);
 }
 
 @layer base {
   body {
     background-color: var(--color-page-void);
-    color: var(--color-off-white-ink);
-    font-family: var(--font-excon);
+    color: var(--color-ink-primary);
+    font-family: var(--font-general-sans);
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
   }
   
   h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-excon);
     line-height: 1.1;
   }
 
-  /* Consistent focus rings */
+  /* Focus rings */
   *:focus-visible {
-    outline: 2px solid var(--color-spray-wash);
+    outline: 2px solid var(--color-accent-emerald);
     outline-offset: 2px;
   }
 
-  /* Skeleton animation */
-  @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
-  }
-  .skeleton {
-    animation: shimmer 2s infinite linear;
-    background: linear-gradient(to right, var(--color-ash-step) 4%, var(--color-stone-lift) 25%, var(--color-ash-step) 36%);
-    background-size: 1000px 100%;
-  }
-  
   /* Custom scrollbars */
   ::-webkit-scrollbar {
     width: 6px;
@@ -118,15 +96,65 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-ash-step);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: var(--radius-full);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-stone-lift);
+    background: rgba(255, 255, 255, 0.22);
   }
 }
 
 @layer components {
+  /* Login-Style Buttons & Cards */
+  .btn-primary-emerald {
+    background: linear-gradient(135deg, #10B981 0%, #0D9488 100%);
+    color: #030712;
+    font-family: var(--font-excon);
+    font-weight: 700;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.25);
+    transition: all 0.2s ease;
+  }
+  .btn-primary-emerald:hover {
+    background: linear-gradient(135deg, #34D399 0%, #14B8A6 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 30px -5px rgba(16, 185, 129, 0.35);
+  }
+  .btn-primary-emerald:active {
+    transform: scale(0.98);
+  }
+
+  .btn-secondary-dark {
+    background: rgba(14, 16, 23, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #D1D5DB;
+    font-family: var(--font-general-sans);
+    font-weight: 500;
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+  }
+  .btn-secondary-dark:hover {
+    background: rgba(21, 24, 34, 0.9);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #FFFFFF;
+  }
+
+  .glass-card {
+    background: rgba(14, 16, 23, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    border-radius: 16px;
+  }
+  .glass-card-hover {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .glass-card-hover:hover {
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 30px -5px rgba(16, 185, 129, 0.15);
+    transform: translateY(-2px);
+  }
+
   /* Tooltip System */
   [data-tooltip] {
     position: relative;
@@ -139,16 +167,16 @@
     transform: translateX(-50%) translateY(0);
     opacity: 0;
     pointer-events: none;
-    background: var(--color-page-void);
-    color: var(--color-off-white-ink);
-    padding: var(--spacing-4) var(--spacing-8);
+    background: #07080B;
+    color: #F9FAFB;
+    padding: 4px 8px;
     border-radius: var(--radius-sm);
     font-size: var(--text-caption);
     white-space: nowrap;
-    border: 1px solid var(--color-ash-step);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.2s ease;
     z-index: 100;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
   }
   [data-tooltip]:hover::before,
   [data-tooltip]:focus-visible::before {
