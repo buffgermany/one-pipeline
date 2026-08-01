@@ -11,9 +11,11 @@ export interface PipelineOptions {
   enrichWebsites?: boolean;
   outputCsvPath?: string;
   industry?: string;
+  saveToDb?: boolean; // Default false: manual saving on import page
   signal?: AbortSignal;
   onLog?: (message: string) => void;
   onLeadScraped?: (lead: RawGMapLead) => void;
+  onEnrichedLead?: (lead: EnrichedLead) => void;
   onProgress?: (progressPercent: number, statusText: string) => void;
 }
 
@@ -29,9 +31,11 @@ export async function runScraperPipeline(options: PipelineOptions) {
     enrichWebsites = true,
     outputCsvPath = 'contacts.csv',
     industry = 'Google Maps Scraping',
+    saveToDb = false,
     signal,
     onLog,
     onLeadScraped,
+    onEnrichedLead,
     onProgress
   } = options;
 
@@ -89,6 +93,15 @@ export async function runScraperPipeline(options: PipelineOptions) {
           log(`  📞 Impressum Tel: ${phoneFound}`);
         }
         if (onProgress) onProgress(percent, `Anreicherung: ${completed}/${total} Websites analysiert...`);
+      },
+      (item) => {
+        const enrichedLead: EnrichedLead = {
+          ...item,
+          id: item.placeId || crypto.randomUUID()
+        };
+        if (onEnrichedLead) {
+          onEnrichedLead(enrichedLead);
+        }
       }
     );
 
@@ -97,7 +110,7 @@ export async function runScraperPipeline(options: PipelineOptions) {
 
     enrichedLeads = enrichedResults.map((lead) => ({
       ...lead,
-      id: crypto.randomUUID()
+      id: lead.placeId || crypto.randomUUID()
     }));
   } else {
     enrichedLeads = rawLeads.map((lead) => ({
@@ -111,59 +124,61 @@ export async function runScraperPipeline(options: PipelineOptions) {
       facebook: '',
       instagram: '',
       linkedin: '',
-      id: crypto.randomUUID()
+      id: lead.placeId || crypto.randomUUID()
     }));
   }
 
-  if (onProgress) onProgress(90, 'Speichere Leads in der Datenbank...');
+  if (onProgress) onProgress(90, 'Analysen abgeschlossen.');
 
-  // Save to SQLite DB using Drizzle
-  log('💾 Speichere Leads in SQLite-Datenbank...');
-  let savedCount = 0;
+  // Save to SQLite DB only if saveToDb === true
+  if (saveToDb) {
+    log('💾 Speichere Leads in SQLite-Datenbank...');
+    let savedCount = 0;
 
-  for (const lead of enrichedLeads) {
-    try {
-      await db
-        .insert(leads)
-        .values({
-          id: lead.id,
-          name: lead.name,
-          phoneNumber: lead.phoneNumber || 'N/A',
-          websitePhone: lead.websitePhone || null,
-          directPhone: lead.directPhone || null,
-          decisionMaker: lead.decisionMaker || null,
-          techStack: lead.techStack || null,
-          industry: lead.category || industry,
-          website: lead.website,
-          email: lead.email,
-          directEmail: lead.directEmail || null,
-          facebook: lead.facebook,
-          instagram: lead.instagram,
-          linkedin: lead.linkedin,
-          placeId: lead.placeId,
-          address: lead.address,
-          category: lead.category,
-          rating: lead.rating,
-          reviews: lead.reviews,
-          featuredImage: lead.featuredImage,
-          importFilename: `gmaps_${Date.now()}`,
-          enrichmentSources: lead.sources ? JSON.stringify(lead.sources) : null,
-          openStatus: lead.openStatus || null,
-          priceLevel: lead.priceLevel || null,
-          googleMapsUrl: lead.googleMapsUrl || null,
-          isAd: lead.isAd ?? false,
-          isClaimed: lead.isClaimed ?? true,
-          status: 'new'
-        })
-        .onConflictDoNothing();
+    for (const lead of enrichedLeads) {
+      try {
+        await db
+          .insert(leads)
+          .values({
+            id: lead.id,
+            name: lead.name,
+            phoneNumber: lead.phoneNumber || 'N/A',
+            websitePhone: lead.websitePhone || null,
+            directPhone: lead.directPhone || null,
+            decisionMaker: lead.decisionMaker || null,
+            techStack: lead.techStack || null,
+            industry: lead.category || industry,
+            website: lead.website,
+            email: lead.email,
+            directEmail: lead.directEmail || null,
+            facebook: lead.facebook,
+            instagram: lead.instagram,
+            linkedin: lead.linkedin,
+            placeId: lead.placeId,
+            address: lead.address,
+            category: lead.category,
+            rating: lead.rating,
+            reviews: lead.reviews,
+            featuredImage: lead.featuredImage,
+            importFilename: `gmaps_${Date.now()}`,
+            enrichmentSources: lead.sources ? JSON.stringify(lead.sources) : null,
+            openStatus: lead.openStatus || null,
+            priceLevel: lead.priceLevel || null,
+            googleMapsUrl: lead.googleMapsUrl || null,
+            isAd: lead.isAd ?? false,
+            isClaimed: lead.isClaimed ?? true,
+            status: 'new'
+          })
+          .onConflictDoNothing();
 
-      savedCount++;
-    } catch {
-      // Ignore database duplicates
+        savedCount++;
+      } catch {
+        // Ignore database duplicates
+      }
     }
-  }
 
-  log(`✅ ${savedCount} neue Leads in der lokalen SQLite-Datenbank gespeichert.`);
+    log(`✅ ${savedCount} neue Leads in der lokalen SQLite-Datenbank gespeichert.`);
+  }
 
   // Export CSV using Bun.write
   if (outputCsvPath && enrichedLeads.length > 0) {
@@ -189,11 +204,14 @@ export async function runScraperPipeline(options: PipelineOptions) {
       }))
     );
 
-    await Bun.write(outputCsvPath, csvContent);
-    log(`📄 CSV-Datei generiert: "${outputCsvPath}".`);
+    try {
+      await Bun.write(outputCsvPath, csvContent);
+      log(`📄 Formatted CSV Export ready: ${outputCsvPath}`);
+    } catch {
+      // Non-fatal if Bun.write path not writable in container
+    }
   }
 
-  if (onProgress) onProgress(100, signal?.aborted ? 'Gestoppt' : 'Fertig!');
-
+  if (onProgress) onProgress(100, 'Fertig!');
   return enrichedLeads;
 }

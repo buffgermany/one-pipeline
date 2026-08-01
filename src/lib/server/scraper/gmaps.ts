@@ -228,11 +228,11 @@ export async function scrapeGoogleMaps(options: ScrapeOptions): Promise<RawGMapL
             const h1 = document.querySelector('h1');
             const name = h1?.textContent?.trim() || '';
 
-            // Clean address
+            // Clean address (include PLZ & City Name)
             const addrBtn = document.querySelector('button[data-item-id="address"]');
-            let rawAddress = addrBtn?.textContent?.trim() || '';
+            let rawAddress = addrBtn?.getAttribute('aria-label')?.replace(/^Adresse:\s*/i, '').trim() || addrBtn?.textContent?.trim() || '';
             const addrDiv = addrBtn?.querySelector('div[class*="fontBodyMedium"]');
-            if (addrDiv?.textContent) {
+            if (addrDiv?.textContent && addrDiv.textContent.trim().length > rawAddress.length) {
               rawAddress = addrDiv.textContent.trim();
             }
 
@@ -288,7 +288,14 @@ export async function scrapeGoogleMaps(options: ScrapeOptions): Promise<RawGMapL
           const name = details.name || item.ariaLabel;
           if (!name) continue;
 
-          const address = cleanAddress(details.rawAddress);
+          let address = cleanAddress(details.rawAddress);
+          if (address && !/\b\d{5}\b/.test(address)) {
+            const queryWords = query.trim().split(/\s+/);
+            const possibleCity = queryWords[queryWords.length - 1];
+            if (possibleCity && possibleCity.length > 2 && !address.toLowerCase().includes(possibleCity.toLowerCase())) {
+              address = `${address}, ${possibleCity}`;
+            }
+          }
           const placeId = Bun.hash(`${name}_${address}`).toString();
 
           if (seenPlaceIds.has(placeId)) continue;

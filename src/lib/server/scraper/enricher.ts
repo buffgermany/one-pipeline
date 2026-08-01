@@ -514,7 +514,8 @@ export async function enrichWebsiteBatch<T extends { website?: string | null; ph
   items: T[],
   concurrency = 25,
   signal?: AbortSignal,
-  onProgress?: (completed: number, total: number, latestEmail?: string, latestPhone?: string, latestDm?: string) => void
+  onProgress?: (completed: number, total: number, latestEmail?: string, latestPhone?: string, latestDm?: string) => void,
+  onEnrichedItem?: (enrichedItem: T & EnrichedContacts) => void
 ): Promise<(T & EnrichedContacts)[]> {
   const results: (T & EnrichedContacts)[] = [];
   let completed = 0;
@@ -544,6 +545,12 @@ export async function enrichWebsiteBatch<T extends { website?: string | null; ph
             };
 
         completed++;
+        const enrichedItem = { ...item, ...contacts };
+
+        if (onEnrichedItem) {
+          onEnrichedItem(enrichedItem);
+        }
+
         if (onProgress) {
           onProgress(
             completed,
@@ -553,7 +560,7 @@ export async function enrichWebsiteBatch<T extends { website?: string | null; ph
             contacts.decisionMaker || undefined
           );
         }
-        return { ...item, ...contacts };
+        return enrichedItem;
       })
     );
     results.push(...enrichedChunk);

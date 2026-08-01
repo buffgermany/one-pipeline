@@ -55,6 +55,9 @@ export const POST: RequestHandler = async ({ request }) => {
             onLeadScraped: (lead) => {
               sendEvent('lead', { lead });
             },
+            onEnrichedLead: (lead) => {
+              sendEvent('enriched_lead', { lead });
+            },
             onProgress: (percent, statusText) => {
               sendEvent('progress', { percent, statusText });
             }

@@ -345,6 +345,15 @@
               } else if (event.type === 'lead') {
                 gmapsLeads = [...gmapsLeads, event.lead];
                 persistCache();
+              } else if (event.type === 'enriched_lead') {
+                const el = event.lead;
+                gmapsLeads = gmapsLeads.map(l => {
+                  if ((el.placeId && l.placeId === el.placeId) || l.name === el.name) {
+                    return { ...l, ...el };
+                  }
+                  return l;
+                });
+                persistCache();
               } else if (event.type === 'complete') {
                 gmapsLeads = event.leads || gmapsLeads;
                 gmapsStatus = event.aborted ? 'stopped' : 'success';
