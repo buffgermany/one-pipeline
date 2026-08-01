@@ -458,7 +458,7 @@
 
   let currentAgentId = $derived($page.data.user?.id || 'agent-felix');
 
-  async function pullNextLead() {
+  async function pullNextLead(skipCurrentLead = false) {
     loadingLead = true;
     callStarted = false;
     showWiedervorlageModal = false;
@@ -466,6 +466,7 @@
     callNotesReset();
 
     const targetLeadId = $page.url.searchParams.get('leadId') || undefined;
+    const skipLeadId = skipCurrentLead && lead?.id ? lead.id : undefined;
 
     try {
       const res = await fetch('/api/queue/pull', {
@@ -473,7 +474,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           agentId: currentAgentId,
-          targetLeadId 
+          targetLeadId: skipCurrentLead ? undefined : targetLeadId,
+          skipLeadId
         })
       });
       if (res.ok) {
@@ -672,6 +674,9 @@
       if (e.key.toLowerCase() === 'c') {
         e.preventDefault();
         startCallWorkflow();
+      } else if (e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        pullNextLead(true);
       } else if (e.key === '1') {
         e.preventDefault();
         logOutcome('Connected');
@@ -826,7 +831,18 @@
       <div class="h-3.5 w-px bg-[var(--color-border-subtle)] mx-0.5 hidden sm:block"></div>
 
       <button 
-        onclick={pullNextLead}
+        onclick={() => pullNextLead(true)}
+        disabled={loadingLead}
+        class="flex items-center gap-1 px-2.5 py-1 rounded bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.3)] text-[var(--color-status-amber)] hover:bg-[var(--color-status-amber)] hover:text-black text-xs font-[var(--font-excon)] font-bold transition-all shrink-0 active:scale-95 cursor-pointer"
+        title="Vorerst überspringen (Lead bleibt in Queue) [S]"
+      >
+        <PhoneForwarded size={12} class="rotate-90 sm:rotate-0" />
+        <span class="hidden sm:inline">Überspringen</span>
+        <kbd class="text-[9px] opacity-80 bg-black/20 px-1 rounded font-mono">S</kbd>
+      </button>
+
+      <button 
+        onclick={() => pullNextLead(false)}
         disabled={loadingLead}
         class="flex items-center gap-1 px-2.5 py-1 rounded bg-[var(--color-surface-lift)] hover:bg-[var(--color-border-focus)] border border-[var(--color-border-subtle)] text-[var(--color-ink-primary)] text-xs font-[var(--font-excon)] font-bold transition-all shrink-0 active:scale-95 cursor-pointer"
         title="Nächster Lead (Enter)"
@@ -1086,8 +1102,8 @@
 
           </div>
 
-          <!-- CALL TRIGGER BUTTON (ALWAYS VISIBLE & UNCLIPPED) -->
-          <div class="pt-1 flex flex-col items-center gap-2">
+          <!-- CALL TRIGGER & SKIP BUTTONS -->
+          <div class="pt-1 flex flex-col gap-2">
             <button 
               onclick={startCallWorkflow}
               class="w-full py-3.5 rounded-[var(--radius-lg)] bg-[var(--color-accent-emerald)] hover:bg-[#0EA5E9] text-[#052E16] hover:text-white font-[var(--font-excon)] font-bold text-base transition-all shadow-lg active:scale-[0.99] flex items-center justify-center gap-3 group cursor-pointer"
@@ -1096,9 +1112,20 @@
               <span>NUMMER KOPIEREN & ANRUF STARTEN</span>
               <kbd class="text-xs font-mono bg-black/20 px-2 py-0.5 rounded ml-1">HOTKEY [C]</kbd>
             </button>
+
+            <button 
+              onclick={() => pullNextLead(true)}
+              disabled={loadingLead}
+              class="w-full py-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] hover:bg-[var(--color-surface-lift)] text-[var(--color-ink-secondary)] hover:text-amber-300 border border-[var(--color-border-subtle)] hover:border-amber-500/40 font-[var(--font-excon)] font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+              title="Überspringt diesen Lead vorerst, lässt ihn aber unverändert in der Queue"
+            >
+              <PhoneForwarded size={14} class="text-amber-400" />
+              <span>Vorerst überspringen (Lead bleibt unverändert in Queue)</span>
+              <kbd class="text-[10px] font-mono bg-black/20 px-1.5 py-0.5 rounded ml-1 opacity-70">HOTKEY [S]</kbd>
+            </button>
             
-            <span class="text-[11px] text-[var(--color-ink-muted)]">
-              Klicke oder drücke <kbd class="font-mono bg-[var(--color-surface-lift)] px-1 rounded">C</kbd>, um die Nummer zu kopieren und den Teleprompter-Fokusmodus zu starten.
+            <span class="text-[11px] text-[var(--color-ink-muted)] text-center">
+              Drücke <kbd class="font-mono bg-[var(--color-surface-lift)] px-1 rounded">C</kbd> zum Anrufen oder <kbd class="font-mono bg-[var(--color-surface-lift)] px-1 rounded">S</kbd> zum Überspringen.
             </span>
           </div>
 

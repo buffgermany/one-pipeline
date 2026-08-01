@@ -2,14 +2,14 @@ import { json } from '@sveltejs/kit';
 import { pullNextLead } from '$lib/server/actions/queue';
 
 export async function POST({ request }) {
-  const { agentId, targetLeadId } = await request.json();
+  const { agentId, targetLeadId, skipLeadId } = await request.json();
   
   if (!agentId) {
     return json({ error: 'agentId is required' }, { status: 400 });
   }
 
   try {
-    const lead = await pullNextLead(agentId, targetLeadId);
+    const lead = await pullNextLead(agentId, targetLeadId, skipLeadId);
     
     if (!lead) {
       return json({ message: 'No leads available' }, { status: 404 });

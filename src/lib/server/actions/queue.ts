@@ -1,8 +1,8 @@
 import { db } from '$lib/server/db';
 import { leads } from '$lib/server/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, and, ne } from 'drizzle-orm';
 
-export async function pullNextLead(agentId: string, targetLeadId?: string) {
+export async function pullNextLead(agentId: string, targetLeadId?: string, skipLeadId?: string) {
   if (targetLeadId) {
     // Lock the requested lead specifically
     const specificLead = await db.update(leads)
@@ -17,12 +17,26 @@ export async function pullNextLead(agentId: string, targetLeadId?: string) {
     if (specificLead.length > 0) return specificLead[0];
   }
 
-  // Check if agent already has an active locked lead
-  const existingLock = await db.query.leads.findFirst({
-    where: (leads, { eq }) => eq(leads.lockedBy, agentId)
-  });
-  
-  if (existingLock) return existingLock;
+  // If skipping current lead, unlock it first so it stays in queue for later
+  if (skipLeadId) {
+    await db.update(leads)
+      .set({
+        lockedBy: null,
+        lockedAt: null,
+        status: 'new'
+      })
+      .where(and(eq(leads.id, skipLeadId), eq(leads.lockedBy, agentId)));
+  } else {
+    // Check if agent already has an active locked lead
+    const existingLock = await db.query.leads.findFirst({
+      where: (leads, { eq }) => eq(leads.lockedBy, agentId)
+    });
+    
+    if (existingLock) return existingLock;
+  }
+
+  // Build exclusion SQL if skipping
+  const excludeClause = skipLeadId ? sql`AND id != ${skipLeadId}` : sql``;
 
   // Atomically lock and return the next highest-priority lead.
   // Priority 1: Rescheduled leads whose time has arrived.
@@ -42,6 +56,7 @@ export async function pullNextLead(agentId: string, targetLeadId?: string) {
           OR 
           (status = 'new')
         )
+        ${excludeClause}
         ORDER BY 
           CASE WHEN reschedule_at IS NOT NULL THEN 0 ELSE 1 END ASC,
           reschedule_at ASC,
