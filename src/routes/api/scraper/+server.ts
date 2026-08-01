@@ -19,11 +19,27 @@ export const POST: RequestHandler = async ({ request }) => {
     const stream = new ReadableStream({
       async start(controller) {
         function sendEvent(type: string, data: any) {
-          const payload = `data: ${JSON.stringify({ type, ...data })}\n\n`;
-          controller.enqueue(encoder.encode(payload));
+          try {
+            const payload = `data: ${JSON.stringify({ type, ...data })}\n\n`;
+            controller.enqueue(encoder.encode(payload));
+          } catch {
+            // Controller closed
+          }
         }
 
-        const abortSignal = request.signal;
+        // Server Pipeline Controller: Decoupled from transient HTTP proxy signal fluctuations
+        const pipelineController = new AbortController();
+
+        // Send Keep-Alive Ping every 5 seconds to prevent Traefik/Caddy/Nginx idle timeouts on Coolify
+        const heartbeatInterval = setInterval(() => {
+          sendEvent('ping', { timestamp: Date.now() });
+        }, 5000);
+
+        // Optional: Listen for explicit client abort if client drops
+        request.signal.addEventListener('abort', () => {
+          // Send log before closing
+          console.log('ℹ️ [Server SSE] Client HTTP connection ended/disconnected.');
+        });
 
         try {
           const leads = await runScraperPipeline({
@@ -32,7 +48,7 @@ export const POST: RequestHandler = async ({ request }) => {
             enrichWebsites,
             industry: industry || 'API Scraping Job',
             headless: true,
-            signal: abortSignal,
+            signal: pipelineController.signal,
             onLog: (message) => {
               sendEvent('log', { message, timestamp: new Date().toLocaleTimeString() });
             },
@@ -44,14 +60,17 @@ export const POST: RequestHandler = async ({ request }) => {
             }
           });
 
+          clearInterval(heartbeatInterval);
+
           sendEvent('complete', {
             count: leads.length,
             leads,
-            aborted: abortSignal.aborted
+            aborted: pipelineController.signal.aborted
           });
 
           controller.close();
         } catch (err: any) {
+          clearInterval(heartbeatInterval);
           sendEvent('error', { error: err.message || 'Scraper error' });
           controller.close();
         }
@@ -61,8 +80,9 @@ export const POST: RequestHandler = async ({ request }) => {
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no'
       }
     });
   } catch (err: any) {
