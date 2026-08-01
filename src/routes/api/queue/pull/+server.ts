@@ -1,18 +1,24 @@
 import { json } from '@sveltejs/kit';
-import { pullNextLead } from '$lib/server/actions/queue';
+import { pullNextLead, type QueuePullFilters } from '$lib/server/actions/queue';
 
 export async function POST({ request }) {
-  const { agentId, targetLeadId, skipLeadId } = await request.json();
+  const { agentId, targetLeadId, skippedLeadIds, skipLeadId, filters } = await request.json();
   
   if (!agentId) {
     return json({ error: 'agentId is required' }, { status: 400 });
   }
 
+  // Combine skipLeadId into skippedLeadIds if provided
+  const allSkipped: string[] = Array.isArray(skippedLeadIds) ? [...skippedLeadIds] : [];
+  if (skipLeadId && !allSkipped.includes(skipLeadId)) {
+    allSkipped.push(skipLeadId);
+  }
+
   try {
-    const lead = await pullNextLead(agentId, targetLeadId, skipLeadId);
+    const lead = await pullNextLead(agentId, targetLeadId, allSkipped, filters as QueuePullFilters);
     
     if (!lead) {
-      return json({ message: 'No leads available' }, { status: 404 });
+      return json({ message: 'Keine passenden Leads für diese Filterkriterien vorhanden.' }, { status: 404 });
     }
     
     return json({ lead });

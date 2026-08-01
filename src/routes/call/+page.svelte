@@ -28,6 +28,7 @@
   import ShieldAlert from 'lucide-svelte/icons/shield-alert';
   import RefreshCw from 'lucide-svelte/icons/refresh-cw';
   import Target from 'lucide-svelte/icons/target';
+  import ArrowUpDown from 'lucide-svelte/icons/arrow-up-down';
   import WebsiteAuditPanel from '$lib/components/WebsiteAuditPanel.svelte';
   import BookOpen from 'lucide-svelte/icons/book-open';
   import Search from 'lucide-svelte/icons/search';
@@ -50,6 +51,20 @@
   // Two-Phase Cockpit Mode
   let callStarted = $state(false);
   let viewMode = $state<'maps' | 'photo'>('maps');
+
+  // Session Skipped Leads History & Targeting Filters
+  let skippedLeadIds = $state<string[]>([]);
+  let filterCategory = $state('all');
+  let filterAuditScore = $state<number | null>(null);
+  let filterSortStrategy = $state<'priority' | 'random' | 'rating' | 'reviews' | 'audit_lowest' | 'unclaimed'>('priority');
+  let filterHasDirectPhone = $state(false);
+  let showFilterModal = $state(false);
+
+  function applyFiltersAndPull() {
+    showFilterModal = false;
+    skippedLeadIds = [];
+    pullNextLead(false);
+  }
 
   // Call Stopwatch Timer State
   let callTimerSeconds = $state(0);
@@ -465,8 +480,11 @@
     activeScriptStage = 1;
     callNotesReset();
 
+    if (skipCurrentLead && lead?.id && !skippedLeadIds.includes(lead.id)) {
+      skippedLeadIds = [...skippedLeadIds, lead.id];
+    }
+
     const targetLeadId = $page.url.searchParams.get('leadId') || undefined;
-    const skipLeadId = skipCurrentLead && lead?.id ? lead.id : undefined;
 
     try {
       const res = await fetch('/api/queue/pull', {
@@ -475,7 +493,13 @@
         body: JSON.stringify({ 
           agentId: currentAgentId,
           targetLeadId: skipCurrentLead ? undefined : targetLeadId,
-          skipLeadId
+          skippedLeadIds,
+          filters: {
+            category: filterCategory,
+            maxAuditScore: filterAuditScore,
+            sortStrategy: filterSortStrategy,
+            hasDirectPhone: filterHasDirectPhone
+          }
         })
       });
       if (res.ok) {
@@ -826,6 +850,18 @@
       >
         <span>Absage</span>
         <kbd class="text-[9px] opacity-70 bg-black/20 px-1 rounded font-mono">4</kbd>
+      </button>
+
+      <button 
+        onclick={() => showFilterModal = true}
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500 hover:text-neutral-950 text-xs font-[var(--font-excon)] font-bold transition-all shrink-0 active:scale-95 cursor-pointer shadow-sm"
+        title="Anruf-Strategie & Ziel-Filter anpassen"
+      >
+        <Target size={13} class="text-emerald-400" />
+        <span class="hidden md:inline">Anruf-Targeting</span>
+        {#if filterCategory !== 'all' || filterAuditScore !== null || filterSortStrategy !== 'priority'}
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        {/if}
       </button>
 
       <div class="h-3.5 w-px bg-[var(--color-border-subtle)] mx-0.5 hidden sm:block"></div>
@@ -1754,6 +1790,114 @@
             <span>Wiedervorlage Speichern & Re-Queue</span>
           </button>
         </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- TARGETING & STRATEGY SELECTION MODAL -->
+  {#if showFilterModal}
+    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col gap-5 shadow-2xl relative">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b border-neutral-800 pb-3">
+          <div class="flex items-center gap-2">
+            <Target size={18} class="text-emerald-400" />
+            <h3 class="text-sm font-[var(--font-excon)] font-bold text-white uppercase tracking-wider">
+              Anruf-Targeting & Akquise-Strategie
+            </h3>
+          </div>
+          <button onclick={() => showFilterModal = false} class="p-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white cursor-pointer">
+            <X size={16} />
+          </button>
+        </div>
+
+        <!-- Filter Controls Grid -->
+        <div class="flex flex-col gap-4 text-xs font-[var(--font-general-sans)]">
+          
+          <!-- 1. Industry / Category Filter -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-[var(--font-excon)] font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
+              <Building2 size={13} class="text-emerald-400" />
+              Ziel-Branche / Nische:
+            </label>
+            <select 
+              bind:value={filterCategory}
+              class="w-full bg-neutral-950 border border-neutral-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white font-medium focus:outline-none cursor-pointer"
+            >
+              <option value="all">Alle Branchen (Ungefiltert)</option>
+              <option value="gastro">🍕 Gastro, Bars & Restaurants</option>
+              <option value="handwerk">🛠️ Handwerk, Bau & Sanitär</option>
+              <option value="praxis">🩺 Praxen, Ärzte & Gesundheit</option>
+              <option value="b2b">💼 B2B, Beratung & Dienstleister</option>
+            </select>
+          </div>
+
+          <!-- 2. Website Audit Score Filter -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-[var(--font-excon)] font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
+              <ShieldAlert size={13} class="text-amber-400" />
+              Website Audit-Qualität:
+            </label>
+            <select 
+              bind:value={filterAuditScore}
+              class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white font-medium focus:outline-none cursor-pointer"
+            >
+              <option value={null}>Alle Webseiten (Ungefiltert)</option>
+              <option value={50}>🔥 Kritische Mängel (Score &lt; 50) — Perfekt für Kaltaquise!</option>
+              <option value={75}>⚠️ Ausbaufähig (Score &lt; 75)</option>
+              <option value={-1}>🌐 Ohne eigene Website (No-Site Leads)</option>
+            </select>
+          </div>
+
+          <!-- 3. Sort & Order Strategy -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-[var(--font-excon)] font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
+              <ArrowUpDown size={13} class="text-cyan-400" />
+              Reihenfolge & Zieh-Strategie:
+            </label>
+            <select 
+              bind:value={filterSortStrategy}
+              class="w-full bg-neutral-950 border border-neutral-800 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-white font-medium focus:outline-none cursor-pointer"
+            >
+              <option value="priority">🎯 Auto-Priority (Wiedervorlagen zuerst)</option>
+              <option value="random">🎲 Zufällig (Random Mixture)</option>
+              <option value="rating">⭐ Höchste Google-Bewertungen</option>
+              <option value="reviews">💬 Meiste Google-Rezensionen</option>
+              <option value="audit_lowest">🔥 Schlechteste Website-Score zuerst</option>
+              <option value="unclaimed">🔑 Unbeanspruchte Google-Profile zuerst</option>
+            </select>
+          </div>
+
+          <!-- 4. Direct Impressum Phone Only -->
+          <label class="flex items-center justify-between p-3 rounded-xl bg-neutral-950 border border-neutral-800 cursor-pointer">
+            <div class="flex items-center gap-2">
+              <PhoneCall size={14} class="text-emerald-400" />
+              <span class="text-xs text-neutral-200 font-semibold">Nur Leads mit Impressum-Direktwahl</span>
+            </div>
+            <input type="checkbox" bind:checked={filterHasDirectPhone} class="rounded text-emerald-500 cursor-pointer" />
+          </label>
+
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-end gap-3 border-t border-neutral-800 pt-4">
+          <button 
+            onclick={() => showFilterModal = false}
+            class="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs font-bold transition-all cursor-pointer"
+          >
+            Abbrechen
+          </button>
+
+          <button 
+            onclick={applyFiltersAndPull}
+            class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-[var(--font-excon)] font-bold text-xs transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+          >
+            <Sparkles size={14} />
+            <span>Strategie Anwenden & Lead Ziehen</span>
+          </button>
+        </div>
+
       </div>
     </div>
   {/if}
