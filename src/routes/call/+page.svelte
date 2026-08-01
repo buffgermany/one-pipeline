@@ -382,7 +382,7 @@
 
   let selectedObjectionId = $state<string>('no-time');
   let selectedResponseIndex = $state<number>(0);
-  let activeRightTab = $state<'objections' | 'arguments' | 'ai'>('objections');
+  let activeRightTab = $state<'objections' | 'arguments' | 'audit' | 'ai'>('objections');
   let copiedSnippetId = $state<string | null>(null);
 
 
@@ -840,265 +840,273 @@
 
   <!-- PRE-CALL BRIEFING MODE -->
   {#if !callStarted}
-    <div class="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto">
-      <div class="w-full max-w-2xl bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] p-6 md:p-8 flex flex-col gap-6 shadow-xl relative overflow-hidden">
+    <div class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col items-center">
+      <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-start my-auto pb-10">
         
-        <div class="relative w-full h-52 rounded-[var(--radius-md)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-page-void)] group flex flex-col">
-          <div class="absolute top-2 right-2 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-md p-1 rounded-[var(--radius-sm)] border border-white/15">
-            <button 
-              onclick={() => viewMode = 'maps'}
-              class="px-2 py-1 rounded text-[11px] font-[var(--font-excon)] font-bold transition-all flex items-center gap-1 {viewMode === 'maps' ? 'bg-[var(--color-accent-emerald)] text-[#052E16]' : 'text-white/80 hover:text-white'}"
-            >
-              <Map size={12} />
-              <span>Google Maps Live</span>
-            </button>
-            <button 
-              onclick={() => viewMode = 'photo'}
-              class="px-2 py-1 rounded text-[11px] font-[var(--font-excon)] font-bold transition-all flex items-center gap-1 {viewMode === 'photo' ? 'bg-[var(--color-accent-emerald)] text-[#052E16]' : 'text-white/80 hover:text-white'}"
-            >
-              <Image size={12} />
-              <span>Foto-Vorschau</span>
-            </button>
+        <!-- LEFT COLUMN (7 Cols): LEAD CORE BRIEFING & CALL TRIGGER CARD -->
+        <div class="lg:col-span-7 bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] p-5 md:p-6 flex flex-col gap-5 shadow-xl relative overflow-hidden">
+          
+          <div class="relative w-full h-48 rounded-[var(--radius-md)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-page-void)] group flex flex-col">
+            <div class="absolute top-2 right-2 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-md p-1 rounded-[var(--radius-sm)] border border-white/15">
+              <button 
+                onclick={() => viewMode = 'maps'}
+                class="px-2 py-1 rounded text-[11px] font-[var(--font-excon)] font-bold transition-all flex items-center gap-1 {viewMode === 'maps' ? 'bg-[var(--color-accent-emerald)] text-[#052E16]' : 'text-white/80 hover:text-white'}"
+              >
+                <Map size={12} />
+                <span>Google Maps Live</span>
+              </button>
+              <button 
+                onclick={() => viewMode = 'photo'}
+                class="px-2 py-1 rounded text-[11px] font-[var(--font-excon)] font-bold transition-all flex items-center gap-1 {viewMode === 'photo' ? 'bg-[var(--color-accent-emerald)] text-[#052E16]' : 'text-white/80 hover:text-white'}"
+              >
+                <Image size={12} />
+                <span>Foto-Vorschau</span>
+              </button>
+            </div>
+
+            {#if viewMode === 'maps'}
+              <iframe 
+                title="Google Maps Location"
+                src={getGoogleMapsEmbedUrl(lead?.name, lead?.address)}
+                class="w-full h-full border-0 filter contrast-105"
+                loading="lazy"
+              ></iframe>
+            {:else}
+              <img 
+                src={getLeadBannerImage(lead)} 
+                alt={lead?.name || 'Business Location'} 
+                onerror={handleImageError}
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+              />
+            {/if}
+
+            <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex items-center justify-between text-xs font-[var(--font-mono)] text-white pointer-events-none">
+              <div class="flex items-center gap-2">
+                <MapPin size={14} class="text-[var(--color-accent-emerald)]" />
+                <span>{lead?.address || 'Deutschland'}</span>
+              </div>
+              
+              <a 
+                href={getGoogleMapsSearchUrl(lead?.name, lead?.address)} 
+                target="_blank" 
+                rel="noreferrer" 
+                class="pointer-events-auto px-2.5 py-1 rounded bg-black/60 hover:bg-[var(--color-accent-emerald)] hover:text-[#052E16] text-white border border-white/20 text-[11px] font-[var(--font-excon)] font-bold transition-all flex items-center gap-1 backdrop-blur-sm"
+              >
+                <span>Auf Google Maps öffnen</span>
+                <ExternalLink size={11} />
+              </a>
+            </div>
           </div>
 
-          {#if viewMode === 'maps'}
-            <iframe 
-              title="Google Maps Location"
-              src={getGoogleMapsEmbedUrl(lead?.name, lead?.address)}
-              class="w-full h-full border-0 filter contrast-105"
-              loading="lazy"
-            ></iframe>
-          {:else}
-            <img 
-              src={getLeadBannerImage(lead)} 
-              alt={lead?.name || 'Business Location'} 
-              onerror={handleImageError}
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-            />
+          {#if lead?.isWiedervorlage || lead?.previousWiedervorlageNote}
+            <div class="p-3.5 rounded-[var(--radius-md)] bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.3)] flex items-start gap-3">
+              <Bell size={18} class="text-[var(--color-status-amber)] shrink-0 mt-0.5" />
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-status-amber)]">Wiedervorlage Fällig</span>
+                  <span class="text-[10px] font-[var(--font-mono)] text-[var(--color-ink-secondary)]">Heute scheduled</span>
+                </div>
+                <p class="text-xs text-[var(--color-ink-primary)] font-medium">
+                  {lead?.previousWiedervorlageNote || 'Hinweis aus vorherigem Telefonat vorhanden.'}
+                </p>
+              </div>
+            </div>
           {/if}
 
-          <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex items-center justify-between text-xs font-[var(--font-mono)] text-white pointer-events-none">
-            <div class="flex items-center gap-2">
-              <MapPin size={14} class="text-[var(--color-accent-emerald)]" />
-              <span>{lead?.address || 'Deutschland'}</span>
-            </div>
+          <!-- ENRICHED LEAD INTELLIGENCE PREVIEW HEADER -->
+          <div class="flex flex-col gap-3 pb-3 border-b border-[var(--color-border-subtle)]">
             
-            <a 
-              href={getGoogleMapsSearchUrl(lead?.name, lead?.address)} 
-              target="_blank" 
-              rel="noreferrer" 
-              class="pointer-events-auto px-2.5 py-1 rounded bg-black/60 hover:bg-[var(--color-accent-emerald)] hover:text-[#052E16] text-white border border-white/20 text-[11px] font-[var(--font-excon)] font-bold transition-all flex items-center gap-1 backdrop-blur-sm"
-            >
-              <span>Auf Google Maps öffnen</span>
-              <ExternalLink size={11} />
-            </a>
-          </div>
-        </div>
-
-        {#if lead?.isWiedervorlage || lead?.previousWiedervorlageNote}
-          <div class="p-4 rounded-[var(--radius-md)] bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.3)] flex items-start gap-3">
-            <Bell size={18} class="text-[var(--color-status-amber)] shrink-0 mt-0.5" />
-            <div class="flex flex-col gap-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-status-amber)]">Wiedervorlage Fällig</span>
-                <span class="text-[10px] font-[var(--font-mono)] text-[var(--color-ink-secondary)]">Heute scheduled</span>
-              </div>
-              <p class="text-xs text-[var(--color-ink-primary)] font-medium">
-                {lead?.previousWiedervorlageNote || 'Hinweis aus vorherigem Telefonat vorhanden.'}
-              </p>
-            </div>
-          </div>
-        {/if}
-
-        <!-- ENRICHED LEAD INTELLIGENCE PREVIEW HEADER -->
-        <div class="flex flex-col gap-4 pb-4 border-b border-[var(--color-border-subtle)]">
-          
-          <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
-            <div class="flex flex-col min-w-0">
-              <div class="flex items-center gap-2 flex-wrap mb-1">
-                <span class="text-[11px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-accent-emerald)] bg-[var(--color-emerald-tint)] px-2 py-0.5 rounded border border-[var(--color-emerald-border)]">
-                  Nächster Lead in Queue
-                </span>
-                <span class="text-xs font-[var(--font-mono)] text-[var(--color-ink-muted)]">{lead?.category || 'B2B Lead'}</span>
-
-                {#if lead?.isAd}
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                    📢 Sponsored Ad
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+              <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                  <span class="text-[11px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-accent-emerald)] bg-[var(--color-emerald-tint)] px-2 py-0.5 rounded border border-[var(--color-emerald-border)]">
+                    Nächster Lead in Queue
                   </span>
-                {/if}
+                  <span class="text-xs font-[var(--font-mono)] text-[var(--color-ink-muted)]">{lead?.category || 'B2B Lead'}</span>
 
-                {#if lead?.isClaimed === false}
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    🔑 GMB Unclaimed Opportunity
-                  </span>
-                {/if}
-              </div>
+                  {#if lead?.isAd}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      📢 Sponsored Ad
+                    </span>
+                  {/if}
 
-              <a 
-                href={lead?.googleMapsUrl || getGoogleMapsSearchUrl(lead?.name, lead?.address)}
-                target="_blank" 
-                rel="noreferrer"
-                class="text-2xl font-[var(--font-excon)] font-bold text-[var(--color-ink-primary)] hover:text-[var(--color-accent-emerald)] mt-1 flex items-center gap-2 group transition-colors cursor-pointer"
-                title="Auf Google Maps öffnen"
-              >
-                <span>{lead?.name}</span>
-                <ExternalLink size={18} class="text-[var(--color-ink-muted)] group-hover:text-[var(--color-accent-emerald)] transition-colors" />
-              </a>
+                  {#if lead?.isClaimed === false}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      🔑 GMB Unclaimed Opportunity
+                    </span>
+                  {/if}
+                </div>
 
-              <p class="text-xs text-[var(--color-ink-secondary)] mt-1 flex items-center gap-2 flex-wrap">
-                <Building2 size={13} /> <span>{lead?.industry}</span>
-                <span>•</span>
-                <MapPin size={13} /> <span>{lead?.address || 'Deutschland'}</span>
-                {#if lead?.openStatus}
+                <a 
+                  href={lead?.googleMapsUrl || getGoogleMapsSearchUrl(lead?.name, lead?.address)}
+                  target="_blank" 
+                  rel="noreferrer"
+                  class="text-xl md:text-2xl font-[var(--font-excon)] font-bold text-[var(--color-ink-primary)] hover:text-[var(--color-accent-emerald)] mt-1 flex items-center gap-2 group transition-colors cursor-pointer"
+                  title="Auf Google Maps öffnen"
+                >
+                  <span>{lead?.name}</span>
+                  <ExternalLink size={18} class="text-[var(--color-ink-muted)] group-hover:text-[var(--color-accent-emerald)] transition-colors" />
+                </a>
+
+                <p class="text-xs text-[var(--color-ink-secondary)] mt-1 flex items-center gap-2 flex-wrap">
+                  <Building2 size={13} /> <span>{lead?.industry}</span>
                   <span>•</span>
-                  <span class="text-[var(--color-accent-emerald)] font-semibold">{lead.openStatus}</span>
-                {/if}
-              </p>
-            </div>
+                  <MapPin size={13} /> <span>{lead?.address || 'Deutschland'}</span>
+                  {#if lead?.openStatus}
+                    <span>•</span>
+                    <span class="text-[var(--color-accent-emerald)] font-semibold">{lead.openStatus}</span>
+                  {/if}
+                </p>
+              </div>
 
-            <div class="flex items-center gap-2 shrink-0">
-              <div class="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex items-center gap-2 text-xs font-[var(--font-mono)] font-bold">
-                <Star size={14} class="text-yellow-400 fill-yellow-400" />
-                <span>{lead?.rating || '4.8'} ⭐</span>
-                <span class="text-[var(--color-ink-muted)]">({lead?.reviews || 0} reviews)</span>
-                {#if lead?.priceLevel}
-                  <span class="text-[var(--color-accent-emerald)] font-bold ml-1">{lead.priceLevel}</span>
-                {/if}
+              <div class="flex items-center gap-2 shrink-0">
+                <div class="px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex items-center gap-2 text-xs font-[var(--font-mono)] font-bold">
+                  <Star size={14} class="text-yellow-400 fill-yellow-400" />
+                  <span>{lead?.rating || '4.8'} ⭐</span>
+                  <span class="text-[var(--color-ink-muted)]">({lead?.reviews || 0} reviews)</span>
+                  {#if lead?.priceLevel}
+                    <span class="text-[var(--color-accent-emerald)] font-bold ml-1">{lead.priceLevel}</span>
+                  {/if}
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- ENRICHED DATA & INTELLIGENCE GRID -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-            
-            <!-- COLUMN 1: DECISION MAKER & TECH STACK -->
-            <div class="bg-[var(--color-page-void)] p-3.5 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] flex flex-col gap-2.5">
-              <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-ink-muted)] flex items-center gap-1">
-                👤 Ansprechpartner & Tech Stack
-              </span>
+            <!-- ENRICHED DATA & INTELLIGENCE GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
+              
+              <!-- COLUMN 1: DECISION MAKER & TECH STACK -->
+              <div class="bg-[var(--color-page-void)] p-3 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] flex flex-col gap-2">
+                <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-ink-muted)] flex items-center gap-1">
+                  👤 Ansprechpartner & Tech Stack
+                </span>
 
-              {#if lead?.decisionMaker}
-                {@const dmSource = parsedSources?.decisionMaker}
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-xs text-[var(--color-ink-secondary)]">Inhaber / GF:</span>
-                  <div class="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-accent-emerald)] bg-[var(--color-emerald-tint)] px-2 py-0.5 rounded border border-[var(--color-accent-emerald)]/30">
-                    <UserCheck size={13} class="shrink-0" />
-                    <span>{lead.decisionMaker}</span>
-                    {#if dmSource?.fragmentUrl || dmSource?.url}
-                      <a
-                        href={dmSource.fragmentUrl || dmSource.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="ml-1 text-[var(--color-accent-emerald)] hover:text-white transition-colors"
-                        title={`Quelle: ${dmSource.url} (Klicken um direkt zur Textstelle zu springen)`}
-                      >
-                        <ExternalLink size={11} />
-                      </a>
-                    {/if}
+                {#if lead?.decisionMaker}
+                  {@const dmSource = parsedSources?.decisionMaker}
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs text-[var(--color-ink-secondary)]">Inhaber / GF:</span>
+                    <div class="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-accent-emerald)] bg-[var(--color-emerald-tint)] px-2 py-0.5 rounded border border-[var(--color-accent-emerald)]/30">
+                      <UserCheck size={13} class="shrink-0" />
+                      <span>{lead.decisionMaker}</span>
+                      {#if dmSource?.fragmentUrl || dmSource?.url}
+                        <a
+                          href={dmSource.fragmentUrl || dmSource.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="ml-1 text-[var(--color-accent-emerald)] hover:text-white transition-colors"
+                          title={`Quelle: ${dmSource.url} (Klicken um direkt zur Textstelle zu springen)`}
+                        >
+                          <ExternalLink size={11} />
+                        </a>
+                      {/if}
+                    </div>
                   </div>
-                </div>
-              {:else}
-                <span class="text-xs text-[var(--color-ink-muted)] italic">Kein konkreter Inhaber auf Impressum gefunden</span>
-              {/if}
-
-              {#if lead?.techStack}
-                <div class="flex flex-col gap-1.5 pt-1 border-t border-[var(--color-border-subtle)]">
-                  <span class="text-xs text-[var(--color-ink-secondary)] font-medium">CMS / Tech Stack:</span>
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    {#each parseTechStack(lead.techStack) as tech}
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[var(--color-surface-lift)] text-[var(--color-ink-primary)] border border-[var(--color-border-focus)] shadow-sm">
-                        <Code size={11} class="text-[var(--color-accent-emerald)] shrink-0" />
-                        <span>{tech}</span>
-                      </span>
-                    {/each}
-                  </div>
-                </div>
-              {/if}
-            </div>
-
-            <!-- COLUMN 2: DIREKTDURCHWAHLEN & CONTACTS -->
-            <div class="bg-[var(--color-page-void)] p-3.5 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] flex flex-col gap-2.5">
-              <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-ink-muted)] flex items-center gap-1">
-                📞 Telefon & E-Mail Kontakte
-              </span>
-
-              <div class="flex flex-col gap-2 text-xs font-mono">
-                <!-- Google Maps Zentrale -->
-                <div class="flex items-center justify-between">
-                  <span class="text-[var(--color-ink-secondary)] flex items-center gap-1">
-                    <Phone size={11} /> Zentrale:
-                  </span>
-                  <span class="font-bold text-[var(--color-ink-primary)]">{lead?.phoneNumber || 'N/A'}</span>
-                </div>
-
-                <!-- Enriched Impressum Phone -->
-                {#if lead?.websitePhone || lead?.directPhone}
-                  <div class="flex items-center justify-between text-[var(--color-accent-emerald)] font-bold bg-[var(--color-emerald-tint)] p-1.5 rounded border border-[var(--color-accent-emerald)]/30">
-                    <span class="flex items-center gap-1">
-                      <PhoneCall size={11} /> Impressum Direktwahl:
-                    </span>
-                    <span>{lead?.directPhone || lead?.websitePhone}</span>
-                  </div>
+                {:else}
+                  <span class="text-xs text-[var(--color-ink-muted)] italic">Kein konkreter Inhaber auf Impressum gefunden</span>
                 {/if}
 
-                <!-- Emails list -->
-                {#if lead?.email || lead?.directEmail}
-                  {@const emails = Array.from(new Set([...(lead?.directEmail?.split(/[,\s;]+/) || []), ...(lead?.email?.split(/[,\s;]+/) || [])])).filter(Boolean)}
-                  <div class="flex flex-col gap-1 pt-1.5 border-t border-[var(--color-border-subtle)]">
-                    <span class="text-[10px] text-[var(--color-ink-secondary)] font-mono flex items-center gap-1">
-                      <Mail size={11} /> E-Mail Kontakte:
-                    </span>
-                    <div class="flex flex-col gap-1 font-mono text-[11px]">
-                      {#each emails as singleEmail}
-                        <a href={`mailto:${singleEmail}`} class="text-[var(--color-accent-emerald)] hover:underline font-semibold flex items-center gap-1 truncate" title={singleEmail}>
-                          <span class="truncate">{singleEmail}</span>
-                          <ExternalLink size={10} class="shrink-0" />
-                        </a>
+                {#if lead?.techStack}
+                  <div class="flex flex-col gap-1.5 pt-1 border-t border-[var(--color-border-subtle)]">
+                    <span class="text-xs text-[var(--color-ink-secondary)] font-medium">CMS / Tech Stack:</span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      {#each parseTechStack(lead.techStack) as tech}
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[var(--color-surface-lift)] text-[var(--color-ink-primary)] border border-[var(--color-border-focus)] shadow-sm">
+                          <Code size={11} class="text-[var(--color-accent-emerald)] shrink-0" />
+                          <span>{tech}</span>
+                        </span>
                       {/each}
                     </div>
                   </div>
                 {/if}
               </div>
 
-              {#if lead?.facebook || lead?.instagram || lead?.linkedin}
-                <div class="flex items-center gap-2 text-[11px] text-blue-400 pt-1 border-t border-[var(--color-border-subtle)]">
-                  <Share2 size={11} />
-                  {#if lead?.linkedin}<a href={lead.linkedin} target="_blank" rel="noreferrer" class="hover:underline">LinkedIn</a>{/if}
-                  {#if lead?.instagram}<a href={lead.instagram} target="_blank" rel="noreferrer" class="hover:underline">Instagram</a>{/if}
-                  {#if lead?.facebook}<a href={lead.facebook} target="_blank" rel="noreferrer" class="hover:underline">Facebook</a>{/if}
+              <!-- COLUMN 2: DIREKTDURCHWAHLEN & CONTACTS -->
+              <div class="bg-[var(--color-page-void)] p-3 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] flex flex-col gap-2">
+                <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-ink-muted)] flex items-center gap-1">
+                  📞 Telefon & E-Mail Kontakte
+                </span>
+
+                <div class="flex flex-col gap-1.5 text-xs font-mono">
+                  <!-- Google Maps Zentrale -->
+                  <div class="flex items-center justify-between">
+                    <span class="text-[var(--color-ink-secondary)] flex items-center gap-1">
+                      <Phone size={11} /> Zentrale:
+                    </span>
+                    <span class="font-bold text-[var(--color-ink-primary)]">{lead?.phoneNumber || 'N/A'}</span>
+                  </div>
+
+                  <!-- Enriched Impressum Phone -->
+                  {#if lead?.websitePhone || lead?.directPhone}
+                    <div class="flex items-center justify-between text-[var(--color-accent-emerald)] font-bold bg-[var(--color-emerald-tint)] p-1.5 rounded border border-[var(--color-accent-emerald)]/30">
+                      <span class="flex items-center gap-1">
+                        <PhoneCall size={11} /> Impressum Direktwahl:
+                      </span>
+                      <span>{lead?.directPhone || lead?.websitePhone}</span>
+                    </div>
+                  {/if}
+
+                  <!-- Emails list -->
+                  {#if lead?.email || lead?.directEmail}
+                    {@const emails = Array.from(new Set([...(lead?.directEmail?.split(/[,\s;]+/) || []), ...(lead?.email?.split(/[,\s;]+/) || [])])).filter(Boolean)}
+                    <div class="flex flex-col gap-1 pt-1 border-t border-[var(--color-border-subtle)]">
+                      <span class="text-[10px] text-[var(--color-ink-secondary)] font-mono flex items-center gap-1">
+                        <Mail size={11} /> E-Mail Kontakte:
+                      </span>
+                      <div class="flex flex-col gap-1 font-mono text-[11px]">
+                        {#each emails as singleEmail}
+                          <a href={`mailto:${singleEmail}`} class="text-[var(--color-accent-emerald)] hover:underline font-semibold flex items-center gap-1 truncate" title={singleEmail}>
+                            <span class="truncate">{singleEmail}</span>
+                            <ExternalLink size={10} class="shrink-0" />
+                          </a>
+                        {/each}
+                      </div>
+                    </div>
+                  {/if}
                 </div>
-              {/if}
+
+                {#if lead?.facebook || lead?.instagram || lead?.linkedin}
+                  <div class="flex items-center gap-2 text-[11px] text-blue-400 pt-1 border-t border-[var(--color-border-subtle)]">
+                    <Share2 size={11} />
+                    {#if lead?.linkedin}<a href={lead.linkedin} target="_blank" rel="noreferrer" class="hover:underline">LinkedIn</a>{/if}
+                    {#if lead?.instagram}<a href={lead.instagram} target="_blank" rel="noreferrer" class="hover:underline">Instagram</a>{/if}
+                    {#if lead?.facebook}<a href={lead.facebook} target="_blank" rel="noreferrer" class="hover:underline">Facebook</a>{/if}
+                  </div>
+                {/if}
+              </div>
+
             </div>
+
+            {#if lead?.notes}
+              <div class="flex flex-col gap-1 mt-1">
+                <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-ink-muted)]">Vorherige Notizen</span>
+                <p class="text-xs text-[var(--color-ink-primary)] leading-relaxed bg-[var(--color-page-void)] p-2.5 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] font-light">
+                  {lead.notes}
+                </p>
+              </div>
+            {/if}
 
           </div>
 
-          <!-- WEBSITE HEALTH & CONVERSION AUDIT PANEL -->
-          <WebsiteAuditPanel auditData={lead?.auditData} auditScore={lead?.auditScore} />
-
-          {#if lead?.notes}
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-ink-muted)]">Vorherige Notizen</span>
-              <p class="text-xs text-[var(--color-ink-primary)] leading-relaxed bg-[var(--color-page-void)] p-3 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] font-light">
-                {lead.notes}
-              </p>
-            </div>
-          {/if}
+          <!-- CALL TRIGGER BUTTON (ALWAYS VISIBLE & UNCLIPPED) -->
+          <div class="pt-1 flex flex-col items-center gap-2">
+            <button 
+              onclick={startCallWorkflow}
+              class="w-full py-3.5 rounded-[var(--radius-lg)] bg-[var(--color-accent-emerald)] hover:bg-[#0EA5E9] text-[#052E16] hover:text-white font-[var(--font-excon)] font-bold text-base transition-all shadow-lg active:scale-[0.99] flex items-center justify-center gap-3 group cursor-pointer"
+            >
+              <PhoneCall size={20} strokeWidth={2.5} class="group-hover:scale-110 transition-transform" />
+              <span>NUMMER KOPIEREN & ANRUF STARTEN</span>
+              <kbd class="text-xs font-mono bg-black/20 px-2 py-0.5 rounded ml-1">HOTKEY [C]</kbd>
+            </button>
+            
+            <span class="text-[11px] text-[var(--color-ink-muted)]">
+              Klicke oder drücke <kbd class="font-mono bg-[var(--color-surface-lift)] px-1 rounded">C</kbd>, um die Nummer zu kopieren und den Teleprompter-Fokusmodus zu starten.
+            </span>
+          </div>
 
         </div>
 
-        <div class="pt-2 flex flex-col items-center gap-3">
-          <button 
-            onclick={startCallWorkflow}
-            class="w-full py-4 rounded-[var(--radius-lg)] bg-[var(--color-accent-emerald)] hover:bg-[#0EA5E9] text-[#052E16] hover:text-white font-[var(--font-excon)] font-bold text-base transition-all shadow-lg active:scale-[0.99] flex items-center justify-center gap-3 group cursor-pointer"
-          >
-            <PhoneCall size={20} strokeWidth={2.5} class="group-hover:scale-110 transition-transform" />
-            <span>NUMMER KOPIEREN & ANRUF STARTEN</span>
-            <kbd class="text-xs font-mono bg-black/20 px-2 py-0.5 rounded ml-1">HOTKEY [C]</kbd>
-          </button>
-          
-          <span class="text-[11px] text-[var(--color-ink-muted)]">
-            Klicke oder drücke <kbd class="font-mono bg-[var(--color-surface-lift)] px-1 rounded">C</kbd>, um die Nummer zu kopieren und den Teleprompter-Fokusmodus zu starten.
-          </span>
+        <!-- RIGHT COLUMN (5 Cols): DEDICATED WEBSITE AUDIT & SALES PITCH PANEL -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+          <WebsiteAuditPanel auditData={lead?.auditData} auditScore={lead?.auditScore} />
         </div>
 
       </div>
@@ -1405,6 +1413,14 @@
           </button>
 
           <button 
+            onclick={() => activeRightTab = 'audit'}
+            class="flex-1 py-2 px-2 text-xs font-[var(--font-excon)] font-bold transition-all flex items-center justify-center gap-1 border-b-2 cursor-pointer {activeRightTab === 'audit' ? 'border-[var(--color-accent-emerald)] text-[var(--color-accent-emerald)] bg-[var(--color-surface-panel)]' : 'border-transparent text-[var(--color-ink-secondary)] hover:text-[var(--color-ink-primary)]'}"
+          >
+            <ShieldAlert size={13} />
+            <span>Audit</span>
+          </button>
+
+          <button 
             onclick={() => activeRightTab = 'ai'}
             class="flex-1 py-2 px-2 text-xs font-[var(--font-excon)] font-bold transition-all flex items-center justify-center gap-1 border-b-2 cursor-pointer {activeRightTab === 'ai' ? 'border-[var(--color-accent-emerald)] text-[var(--color-accent-emerald)] bg-[var(--color-surface-panel)]' : 'border-transparent text-[var(--color-ink-secondary)] hover:text-[var(--color-ink-primary)]'}"
           >
@@ -1545,6 +1561,13 @@
               <span class="text-xs font-[var(--font-excon)] font-bold text-[var(--color-accent-emerald)]">Schlüsselfertig in 48 Stunden</span>
               <p class="text-xs text-[var(--color-ink-primary)] leading-relaxed font-light">Keine monatelangen Agentur-Schleifen. Wir liefern die fertige Conversion-Seite sofort.</p>
             </div>
+          </div>
+        {/if}
+
+        <!-- TAB 3: WEBSITE AUDIT -->
+        {#if activeRightTab === 'audit'}
+          <div class="flex-1 p-3 overflow-y-auto">
+            <WebsiteAuditPanel auditData={lead?.auditData} auditScore={lead?.auditScore} />
           </div>
         {/if}
 
