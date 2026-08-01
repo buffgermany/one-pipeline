@@ -186,9 +186,6 @@
               <span class="text-lg sm:text-xl font-bold font-[var(--font-excon)] text-white group-hover:{theme.textColor} transition-colors">
                 {profile.name}
               </span>
-              <span class="text-xs px-2.5 py-0.5 rounded-full border font-medium uppercase tracking-wider font-[var(--font-mono)] {theme.badgeBg}">
-                {profile.role || 'Sales'}
-              </span>
             </div>
           </button>
         {/each}
@@ -219,12 +216,9 @@
             {selectedProfile.avatar || selectedProfile.name.slice(0, 2).toUpperCase()}
           </div>
 
-          <h2 class="text-2xl font-bold font-[var(--font-excon)] text-white mb-1">
+          <h2 class="text-2xl font-bold font-[var(--font-excon)] text-white mb-6">
             Hallo, {selectedProfile.name}!
           </h2>
-          <p class="text-xs text-neutral-400 mb-6 font-[var(--font-mono)]">
-            {selectedProfile.email}
-          </p>
 
           <!-- Password Form -->
           <form onsubmit={handleLogin} class="w-full space-y-4">

@@ -73,10 +73,9 @@ try {
         VALUES (?, ?, ?, ?, ?, ?)
       `).run(u.id, u.name, u.email, hash, u.avatar, u.role);
       console.log(`👤 [Auth Seed] Initialized user profile: ${u.name} (${u.id})`);
-    } else if (!existing.password_hash || existing.password_hash === '') {
-      const hash = getSeedHash(u.pass);
-      sqlite.prepare('UPDATE users SET password_hash = ?, avatar = ?, role = ? WHERE id = ?').run(hash, u.avatar, u.role, u.id);
-      console.log(`👤 [Auth Seed] Updated password hash for user profile: ${u.name}`);
+    } else {
+      const hash = (!existing.password_hash || existing.password_hash === '') ? getSeedHash(u.pass) : existing.password_hash;
+      sqlite.prepare('UPDATE users SET name = ?, password_hash = ?, avatar = ?, role = ? WHERE id = ?').run(u.name, hash, u.avatar, u.role, u.id);
     }
   }
 
