@@ -50,7 +50,9 @@ export async function runScraperPipeline(options: PipelineOptions) {
     maxScrolls,
     headless,
     signal,
-    onLog: (m) => log(m),
+    onLog: (m) => {
+      if (onLog) onLog(m);
+    },
     onLeadScraped: (l) => {
       if (onLeadScraped) onLeadScraped(l);
     }
