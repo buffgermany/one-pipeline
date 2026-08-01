@@ -171,7 +171,9 @@ try {
     ['price_level', 'TEXT'],
     ['google_maps_url', 'TEXT'],
     ['is_ad', 'INTEGER DEFAULT 0'],
-    ['is_claimed', 'INTEGER DEFAULT 1']
+    ['is_claimed', 'INTEGER DEFAULT 1'],
+    ['audit_score', 'INTEGER'],
+    ['audit_data', 'TEXT']
   ];
 
   for (const [colName, colType] of allLeadsColumns) {

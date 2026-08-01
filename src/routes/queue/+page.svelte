@@ -310,6 +310,15 @@
                           🔑 Unclaimed
                         </span>
                       {/if}
+
+                      {#if b.auditScore !== null && b.auditScore !== undefined}
+                        <span 
+                          class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold font-mono border shrink-0 {b.auditScore < 50 ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : (b.auditScore < 80 ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30')}"
+                          title={`Website Score: ${b.auditScore}/100`}
+                        >
+                          🏆 {b.auditScore}/100
+                        </span>
+                      {/if}
                     </div>
 
                     {#if b.decisionMaker}

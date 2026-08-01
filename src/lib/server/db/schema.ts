@@ -66,6 +66,11 @@ export const leads = sqliteTable('leads', {
   googleMapsUrl: text('google_maps_url'),
   isAd: integer('is_ad', { mode: 'boolean' }).default(false),
   isClaimed: integer('is_claimed', { mode: 'boolean' }).default(true),
+
+  // 100% Free Deep Audit & Multi-Category Scoring Engine
+  auditScore: integer('audit_score'), // Overall score 0-100
+  auditData: text('audit_data'), // JSON string with detailed sub-scores, stats, problems & pitch points
+
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`)
 });
 

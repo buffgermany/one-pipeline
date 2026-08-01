@@ -39,7 +39,9 @@ export async function POST({ request }) {
       priceLevel: lead.priceLevel ? String(lead.priceLevel) : null,
       googleMapsUrl: lead.googleMapsUrl ? String(lead.googleMapsUrl) : null,
       isAd: lead.isAd ?? false,
-      isClaimed: lead.isClaimed ?? true
+      isClaimed: lead.isClaimed ?? true,
+      auditScore: lead.auditScore ? Number(lead.auditScore) : (lead.auditResult?.overallScore ? Number(lead.auditResult.overallScore) : null),
+      auditData: lead.auditData ? (typeof lead.auditData === 'string' ? lead.auditData : JSON.stringify(lead.auditData)) : (lead.auditResult ? JSON.stringify(lead.auditResult) : null)
     }));
 
     await db.insert(leads).values(values);

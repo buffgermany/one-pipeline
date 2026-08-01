@@ -28,6 +28,7 @@
   import ShieldAlert from 'lucide-svelte/icons/shield-alert';
   import RefreshCw from 'lucide-svelte/icons/refresh-cw';
   import Target from 'lucide-svelte/icons/target';
+  import WebsiteAuditPanel from '$lib/components/WebsiteAuditPanel.svelte';
   import BookOpen from 'lucide-svelte/icons/book-open';
   import Search from 'lucide-svelte/icons/search';
   import UserCheck from 'lucide-svelte/icons/user-check';
@@ -1070,6 +1071,9 @@
             </div>
 
           </div>
+
+          <!-- WEBSITE HEALTH & CONVERSION AUDIT PANEL -->
+          <WebsiteAuditPanel auditData={lead?.auditData} auditScore={lead?.auditScore} />
 
           {#if lead?.notes}
             <div class="flex flex-col gap-1">

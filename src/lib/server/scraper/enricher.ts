@@ -1,4 +1,5 @@
 import * as cheerio from 'cheerio';
+import { auditWebsite, type WebsiteAuditResult } from './audit';
 
 export interface SourceLocation {
   url: string;
@@ -28,6 +29,9 @@ export interface EnrichedContacts {
   facebook: string;
   instagram: string;
   linkedin: string;
+  auditScore?: number;
+  auditData?: string;
+  auditResult?: WebsiteAuditResult;
   sources?: EnrichmentSourcesMap;
 }
 
@@ -303,6 +307,18 @@ export async function enrichWebsite(
 
       const htmlText = await response.text();
       const $ = cheerio.load(htmlText);
+
+      // Perform 100% Free Deep Website Audit & Multi-Category Scoring
+      if (targetUrl === baseUrl || !contacts.auditScore) {
+        try {
+          const audit = auditWebsite(targetUrl, htmlText, $);
+          contacts.auditScore = audit.overallScore;
+          contacts.auditData = JSON.stringify(audit);
+          contacts.auditResult = audit;
+        } catch (e) {
+          console.error('Audit failed for:', targetUrl, e);
+        }
+      }
 
       // 1. Tech Stack Detection
       const detectedStack = detectTechStack(htmlText, $);
