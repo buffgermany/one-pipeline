@@ -1,0 +1,418 @@
+{
+  "guides": [
+    {
+      "id": "opener-permissive",
+      "title": "Erlaubnis-basierter Einstieg",
+      "category": "opening",
+      "steps": [
+        {
+          "phase": "Hook",
+          "script": "Guten Tag {{KUNDE_ANREDE_NAME}}, ich bin ganz ehrlich zu Ihnen: Das hier ist ein Akquiseanruf. Haben Sie kurz 30 Sekunden Zeit?",
+          "note": "Ruhig, entspannt und ehrlich sprechen. Tonfall am Satzende nach unten ziehen."
+        },
+        {
+          "phase": "Pitch",
+          "script": "Wir helfen lokalen Betrieben wie Restaurants und Handwerkern dabei, ihre Webseite von einer stummen Visitenkarte in eine aktive Kunden- und Buchungsmaschine zu verwandeln – komplett schlüsselfertig inklusive Pflege.",
+          "note": "Kurzes Nutzenversprechen ohne Buzzwords. Fokus auf Schmerzbeseitigung."
+        },
+        {
+          "phase": "Elefant im Raum",
+          "script": "Ich weiß natürlich, dass so ein Anruf mitten am Tag nicht auf riesige Begeisterung stößt. Mir geht es heute auch gar nicht darum, Ihnen sofort etwas zu verkaufen.",
+          "note": "Druck sofort herausnehmen, Humor und Selbstironie nutzen."
+        },
+        {
+          "phase": "CTA",
+          "script": "Klingt es fair, wenn wir uns kurz 10 Minuten unverbindlich anschauen, wo bei Ihrem aktuellen Webauftritt Kunden verloren gehen?",
+          "note": "Nutzt das Fairness-Prinzip. Verlangt nur ein kleines Micro-Commitment."
+        }
+      ]
+    },
+    {
+      "id": "opener-direct",
+      "title": "Direkter Einstieg (Positions- & Vorleistungs-Hook)",
+      "category": "opening",
+      "steps": [
+        {
+          "phase": "Hook",
+          "script": "Guten Tag {{KUNDE_ANREDE_NAME}}, {{ANRUFER_VORNAME}} mein Name. Kurze Frage vorweg: Sind Sie bei {{FIRMENNAME}} aktuell noch für den Online-Auftritt und die Kundengewinnung verantwortlich?",
+          "note": "Curiosity-Hook: Klingt nach Geschäftspartner oder Auftraggeber. Baut sofort Aufmerksamkeit auf."
+        },
+        {
+          "phase": "Pitch",
+          "script": "Perfekt. Ich habe mir eben Ihre aktuelle Webseite angeschaut. Wir erstellen für lokale Betriebe in der Region schlüsselfertige Webseiten, die Besuchern auf dem Smartphone sofort Lust machen, bei Ihnen zu buchen oder anzurufen – ohne dass Sie selbst Zeit investieren müssen.",
+          "note": "Vorleistung und Vorab-Analyse andeuten. Auf Zeitersparnis eingehen."
+        },
+        {
+          "phase": "Elefant im Raum",
+          "script": "Keine Sorge, ich halte Sie gar nicht lange im Tagesgeschäft auf. Ich möchte Ihnen am Telefon auch nichts aufdrängen.",
+          "note": "Augenhöhe wahren, Haltung des Beraters einnehmen."
+        },
+        {
+          "phase": "CTA",
+          "script": "Haben Sie nächsten Dienstag kurz Zeit, damit ich Ihnen 3 konkrete Punkte zeige, wie Sie über Google mehr direkte Anfragen bekommen?",
+          "note": "Konkrete Mehrwerte ankündigen und Terminführung übernehmen."
+        }
+      ]
+    },
+    {
+      "id": "opener-problem",
+      "title": "Problem-fokussierter Einstieg (Pain- & User-Journey-Spiegel)",
+      "category": "opening",
+      "steps": [
+        {
+          "phase": "Hook",
+          "script": "Guten Tag {{KUNDE_ANREDE_NAME}}, ich wollte eben auf Ihrer Webseite schnell {{BRANCHEN_AKTION}}. Auf dem Smartphone war das extrem unübersichtlich. Haben Sie sich Ihre Seite selbst mal aus Kundensicht auf dem Handy angeschaut?",
+          "note": "Pain-Spiegel: Spricht ein echtes Nutzerproblem auf mobilen Geräten an."
+        },
+        {
+          "phase": "Pitch",
+          "script": "Über 80 Prozent Ihrer Kunden suchen Sie heute auf dem Smartphone. Wenn die Seite da langsam ist oder man die Telefonnummer suchen muss, springen die Leute direkt zur Konkurrenz ab. Wir lösen das mit unserem All-in-One Website Service komplett schlüsselfertig.",
+          "note": "Verlust-Frame aufzeigen: Kunden springen zur Konkurrenz ab."
+        },
+        {
+          "phase": "CTA",
+          "script": "Wollen wir uns einfach mal 10 Minuten zusammensetzen und schauen, wie eine moderne mobilsichere Lösung für Ihren Betrieb aussehen kann?",
+          "note": "Niedrigschwellige Einladung zum gemeinsamen Blick auf den Auftritt."
+        }
+      ]
+    },
+    {
+      "id": "opener-zero-website",
+      "title": "Sonderfall: Gar keine Webseite vorhanden (Zero-Presence Opener)",
+      "category": "zero-website",
+      "steps": [
+        {
+          "phase": "Frecher Absichts-Hook",
+          "script": "Hallo {{KUNDE_ANREDE_NAME}}, {{ANRUFER_VORNAME}} von Buff. Ich habe mir eben Ihren Eintrag auf Google Maps angeschaut – Sie haben Top-Bewertungen, aber es ist gar keine eigene Webseite hinterlegt. Ist das Absicht, um sich Kunden vom Hals zu halten, oder ist Ihnen das bisher gar nicht aufgefallen?",
+          "note": "Provokante Frage. Der Inhaber reagiert sofort auf 'Absicht, Kunden abzuschrecken'."
+        },
+        {
+          "phase": "Pitch",
+          "script": "Wer heute in der Region nach Handwerkern oder Restaurants sucht, klickt ohne eigene Webseite sofort weiter zum nächsten Anbieter. Wir erstellen lokalen Betrieben komplett schlüsselfertige Webseiten als All-in-Service, ohne dass Sie Wochen an Arbeit investieren müssen.",
+          "note": "Klares Verlust-Framing & Dienstleistungs-Entlastung."
+        },
+        {
+          "phase": "CTA",
+          "script": "Wollen wir uns am Donnerstag kurz 10 Minuten anschauen, wie wir Ihren Betrieb in 7 Tagen professionell ins Netz bringen?",
+          "note": "Niedrigschwellige Zeitrahmen-Zusage."
+        }
+      ]
+    },
+    {
+      "id": "gatekeeper-bypass",
+      "title": "Gatekeeper & Vorzimmer Bypass (Empfang & Assistenz)",
+      "category": "gatekeeper",
+      "steps": [
+        {
+          "phase": "Status-Sicherung & Vorname",
+          "script": "Guten Tag, {{ANRUFER_NACHNAME}} mein Name, grüß Sie. Sagen Sie, ist {{KUNDE_VOLLNAME}} gerade kurz greifbar oder noch im Kundentermin?",
+          "note": "Beiläufige, selbstbewusste Tonalität. Klingt wie ein bekannter Geschäftspartner."
+        },
+        {
+          "phase": "Dringlichkeits-Frame bei Rückfrage",
+          "script": "Es geht um den fehlerhaften Google-Eintrag von {{FIRMENNAME}} und verloren gehende Kundenanfragen in der Region. Stellen Sie mich bitte kurz durch, danke.",
+          "note": "Nicht rechtfertigen oder 'Verkauf' sagen. Relevanz für das Unternehmen betonen."
+        },
+        {
+          "phase": "Mail-Abwimmelungs-Airbag",
+          "script": "Schicke ich furchtbar gerne direkt per Mail zu. Sagen Sie mir nur eben: Liest man die Mails unter {{KUNDE_EMAIL}} persönlich oder geht das über Ihren Tisch? Dann setze ich ein 'z.Hd. {{KUNDE_NACHNAME}}' drüber.",
+          "note": "Echte E-Mail-Adresse und Kontaktdurchwahl sichern."
+        }
+      ]
+    },
+    {
+      "id": "pattern-interrupt",
+      "title": "Pattern Interrupt: Wenn der Opener bereits bekannt ist",
+      "category": "pattern-interrupt",
+      "steps": [
+        {
+          "phase": "Radikale Meta-Ebene",
+          "script": "Erwischt! Ich gebe es ehrlich zu – das war der klassische Vertriebler-Spruch aus dem Lehrbuch {{LACHEN}}. Aber Hand aufs Herz, {{KUNDE_ANREDE_NAME}}: Wir machen das beide schon lange genug. Darf ich in 15 Sekunden auf den Punkt kommen und Sie entscheiden, ob wir auflegen?",
+          "note": "Lachen, Entspannung reinbringen. Nimmt dem Kunden sofort den Wind aus den Segeln."
+        },
+        {
+          "phase": "Peer-to-Peer Pivot",
+          "script": "Wir bauen schlüsselfertige Webseiten für Betriebe aus Ihrer Region, die automatisch Kunden anziehen, statt nur Geld zu kosten. Kein Fachjargon, kein Agentur-Quatsch.",
+          "note": "Kurz, direkt, ohne Schnörkel."
+        },
+        {
+          "phase": "CTA",
+          "script": "Passt es Ihnen diese Woche für 10 Minuten Zoom oder sagen Sie direkt 'Nein danke'?",
+          "note": "Ehrlicher Close, gibt dem Kunden volle Kontrolle."
+        }
+      ]
+    },
+    {
+      "id": "situational-onsite",
+      "category": "situational",
+      "title": "Situativ: Kunde auf der Baustelle / in der Küche / unterwegs",
+      "steps": [
+        {
+          "phase": "Sofortige Wahrnehmung",
+          "script": "Hallo {{KUNDE_ANREDE_NAME}}, ich höre die Maschinen im Hintergrund / den Trubel in der Küche – Sie stehen gerade mitten im Einsatz. Ich lege sofort auf!",
+          "note": "Empathie & Respekt zeigen, bevor der Kunde genervt auflegt."
+        },
+        {
+          "phase": "Micro-Fixing",
+          "script": "Ich rufe Sie nicht im Stress an. Wann passt es Ihnen morgen besser für exakt 60 Sekunden – eher um 7:30 Uhr vor dem ersten Einsatz oder nach Feierabend?",
+          "note": "Zeitfenster vor oder nach den Kernarbeitszeiten vorschlagen."
+        }
+      ]
+    },
+    {
+      "id": "qualification-booking",
+      "title": "Qualifizierung & Terminvereinbarung",
+      "category": "qualification",
+      "steps": [
+        {
+          "phase": "Ist-Zustand",
+          "script": "Darf ich Sie kurz fragen: Wenn heute potenzielle Kunden auf Ihre Webseite kommen – wie viele davon rufen direkt an oder buchen online?",
+          "note": "Status Quo hinterfragen. Den Kunden das Problem selbst aussprechen lassen."
+        },
+        {
+          "phase": "Flaschenhals & Frustrations-Check",
+          "script": "Wie viel Zeit und Nerven kostet es Sie aktuell, wenn Sie Texte, Fotos oder Öffnungszeiten auf der Webseite anpassen möchten?",
+          "note": "Zeigt den versteckten Aufwand auf (Website als Dauerbaustelle)."
+        },
+        {
+          "phase": "Nutzen-Kopplung",
+          "script": "Genau da setzen wir an. Sie bekommen eine top-moderne Webseite plus monatlichen Rundum-Service. Sie schicken uns eine kurze WhatsApp, und wir erledigen den Rest innerhalb von 24 Stunden.",
+          "note": "Das Produkt als Rundum-Sorglos-Paket positionieren."
+        },
+        {
+          "phase": "Alternative Terminführung",
+          "script": "Haben Sie Ihren Kalender griffbereit? Auf welchen Tag schauen Sie gerade – passt es Ihnen eher Anfang oder Mitte nächster Woche?",
+          "note": "Tonalität am Satzende nach unten ziehen! Keine Bittsteller-Pose."
+        },
+        {
+          "phase": "Anti-Cancellation & Soft-Close",
+          "script": "Ich trage uns den Termin für Dienstag um 10 Uhr ein. Eine kleine Bitte noch: Sie legen jetzt nicht gleich auf, löschen den Kalendereintrag und denken sich: 'Ach, gar keine Lust auf ein Webdesign-Gespräch'?",
+          "note": "Mit Schmunzeln bringen. Sichert die Termintreue extrem ab."
+        }
+      ]
+    }
+  ],
+  "objections": [
+    {
+      "id": "no-time",
+      "category": "Keine Zeit",
+      "trigger": "Ich habe gerade gar keine Zeit dafür / Wir stecken voll im Tagesgeschäft.",
+      "responses": [
+        {
+          "variant": "Direkt & Wertschätzend",
+          "airbag": "Das verstehe ich absolut. Ich platze hier auch völlig unangemeldet in Ihren Arbeitstag rein.",
+          "reframing": "Genau deshalb rufe ich an: Wir nehmen lokalen Inhabern die komplette Webseiten-Betreuung ab, damit Sie eben mehr Zeit für Ihr Kerngeschäft haben.",
+          "cta": "Lassen Sie uns heute gar nicht weiter sprechen – passt es Ihnen eher Dienstag um 9 Uhr oder Mittwoch um 14 Uhr für einen kurzen 10-Minuten-Call?"
+        },
+        {
+          "variant": "30-Sekunden-Deal",
+          "airbag": "Ich höre raus, Sie stehen gerade mitten im Betrieb. Ich halte Sie keine Minute auf.",
+          "reframing": "Mir geht es heute nicht um ein langes Verkaufsgespräch, sondern nur um einen kurzen Impuls für Ihren Online-Auftritt.",
+          "cta": "Darf ich Ihnen in zwei Sätzen sagen, warum sich 10 Minuten nächste Woche für Sie auszahlen, und Sie entscheiden dann?"
+        },
+        {
+          "variant": "Zeit-Investitions-Vergleich",
+          "airbag": "Völlig verständlich. Zeit ist bei Inhabern Mangelware.",
+          "reframing": "Wie viele Stunden verlieren Sie und Ihr Team aktuell pro Monat, weil Sie selbst an der Webseite basteln oder Anfragen manuell beantworten?",
+          "cta": "Wären Sie offen dafür, in 10 Minuten zu sehen, wie Sie diese Stunden jeden Monat zurückgewinnen?"
+        }
+      ]
+    },
+    {
+      "id": "have-provider",
+      "category": "Bestehender Partner",
+      "trigger": "Wir haben schon eine Webseite / eine Agentur / das macht mein Bekannter.",
+      "responses": [
+        {
+          "variant": "Skala-Frage (Konjunktiv-Hebel)",
+          "airbag": "Das habe ich mir schon gedacht. Erfolgreiche Betriebe wie {{FIRMENNAME}} haben natürlich längst einen Internetauftritt.",
+          "reframing": "Wenn Sie ehrlich sind: Wenn Sie Ihrer aktuellen Seite auf einer Skala von 1 bis 10 eine Note geben müssten für echte Neukundengewinnung über das Smartphone – was wäre das?",
+          "cta": "Wenn es eine 6 oder 7 ist: Wären Sie offen dafür, in 10 Minuten zu sehen, was für eine 10 gefehlt hat?"
+        },
+        {
+          "variant": "Inhalts- & Pflege-Flaschenhals",
+          "airbag": "Verstehe ich gut. Prima, dass Sie da schon aufgestellt sind.",
+          "reframing": "Wie schnell setzt Ihr aktueller Partner denn Änderungen wie neue Speisekarten, Öffnungszeiten oder Fotos um – dauert das Tage oder geht das sofort?",
+          "cta": "Sollen wir uns nächste Woche einfach mal 10 Minuten austauschen, wie unser All-in-Service inklusive 24-Stunden-Änderungsservice aussieht?"
+        },
+        {
+          "variant": "Ergebnis- & Conversion-Fokus",
+          "airbag": "Super, dann haben Sie das Fundament bereits gelegt.",
+          "reframing": "Bringt die Seite {{FIRMENNAME}} denn auch wöchentlich messbar neue Anfragen und Reservierungen, oder ist es eher eine digitale Visitenkarte?",
+          "cta": "Spricht etwas dagegen, unverbindlich zu vergleichen, wie Sie aus bestehenden Besuchern doppelt so viele Anfragen rausholen?"
+        }
+      ]
+    },
+    {
+      "id": "no-interest",
+      "category": "Kein Interesse / Kein Bedarf",
+      "trigger": "Wir haben kein Interesse / Wir brauchen das aktuell nicht.",
+      "responses": [
+        {
+          "variant": "Ehrliches Status-Framing",
+          "airbag": "Absolut verständlich, {{KUNDE_ANREDE_NAME}}. Wenn ich unangemeldet anrufen würde, wäre das auch meine erste Reaktion.",
+          "reframing": "Ganz ehrlich: Wenn Ihre Auslastung zu 100 % perfekt ist und über Ihre Webseite jeden Tag automatisch Wunschkunden anfragen, macht ein Gespräch auch gar keinen Sinn.",
+          "cta": "Falls Sie aber sagen 'Besser geht immer': Spricht etwas dagegen, sich kurz 10 Minuten unverbindliche Ideen einzuholen?"
+        },
+        {
+          "variant": "Negativ-Spiegel",
+          "airbag": "Klar, vollkommen in Ordnung.",
+          "reframing": "Ich gehe davon aus, Sie sagen mir jetzt, dass Ihr Online-Auftritt bereits jeden Monat vollautomatisch die besten Kunden und Mitarbeiter anzieht, richtig?",
+          "cta": "Darf ich Ihnen in 30 Sekunden zeigen, wo die meisten lokalen Betriebe aktuell bares Geld auf der Straße liegen lassen?"
+        },
+        {
+          "variant": "Risikofreier Impuls",
+          "airbag": "Verstehe ich. Niemand wartet morgens auf den Anruf eines Webdesigners.",
+          "reframing": "Mir geht es auch nicht darum, Ihnen etwas aufzudrängen. Es geht nur darum, ob Sie für Ihren Betrieb das Maximum rausholen.",
+          "cta": "Haben Sie am Donnerstag kurz Zeit für einen Kaffee-Call über Zoom – Sie nehmen 2-3 konkrete Tipps mit, egal ob wir danach zusammenarbeiten oder nicht?"
+        }
+      ]
+    },
+    {
+      "id": "send-info",
+      "category": "Schicken Sie Unterlagen",
+      "trigger": "Schicken Sie mir einfach eine E-Mail mit Unterlagen.",
+      "responses": [
+        {
+          "variant": "Der Ehrlichkeits-Test",
+          "airbag": "Mache ich furchtbar gerne direkt per E-Mail fertig.",
+          "reframing": "Darf ich Sie aber ganz ehrlich was fragen? Meistens, wenn Entscheider so früh im Gespräch sagen 'Schicken Sie mir Unterlagen', ist das die höfliche Form von 'Ich habe eigentlich kein Interesse'. Ist es das gerade bei Ihnen?",
+          "cta": "Falls nicht: Wenn Sie die Mail überfliegen und es Sinn macht – ist es fair, wenn wir uns Freitag um 10 Uhr kurz 10 Minuten zusammensetzen?"
+        },
+        {
+          "variant": "Individueller Entwurf statt Standard-PDF",
+          "airbag": "Kann ich Ihnen natürlich zuschicken.",
+          "reframing": "Eine Standard-Broschüre sagt Ihnen aber nicht, wo konkret auf Ihrer Webseite aktuell die Besucher abspringen.",
+          "cta": "Wollen wir lieber 10 Minuten kurz Bildschirme teilen, wo ich Ihnen direkt an Ihrer Seite zeige, was wir optimieren würden?"
+        },
+        {
+          "variant": "Relevanz-Qualifikation",
+          "airbag": "Geht sofort raus an Sie.",
+          "reframing": "Damit ich Ihnen nicht ein 20-seitiges Dokument schicke, das eh im Spam landet: Worauf legen Sie bei Ihrer Webseite aktuell den größten Wert – Neukunden, Mitarbeiterfindung oder dass Sie selbst keine Arbeit damit haben?",
+          "cta": "Perfekt, dann lass uns genau zu diesem Punkt nächsten Dienstag 10 Minuten sprechen."
+        }
+      ]
+    },
+    {
+      "id": "too-expensive",
+      "category": "Zu teuer / Kein Budget",
+      "trigger": "Eine neue Webseite ist uns zu teuer / Wir haben kein Budget dafür.",
+      "responses": [
+        {
+          "variant": "Service-Modell & Cashflow-Framing",
+          "airbag": "Völlig verständlich. Niemand möchte tausende Euro auf einmal für eine Agentur ausgeben.",
+          "reframing": "Genau deshalb verkaufen wir keine teuren Einmal-Projekte für 5.000 Euro, sondern bieten das als monatlichen All-in-Service ab kleinen Beträgen an – inklusive Hosting und Änderungen.",
+          "cta": "Lassen Sie uns doch im Termin kurz schauen, ob sich das Modell für {{FIRMENNAME}} schon ab dem ersten Neukunden rechnet. Klingt das vernünftig?"
+        },
+        {
+          "variant": "Kosten des Problems",
+          "airbag": "Verstehe ich gut. Budget muss sich immer lohnen.",
+          "reframing": "Zu teuer ist eine Investition ja immer nur dann, wenn am Ende weniger rauskommt, als man reingesteckt hat. Was kostet es Sie denn jeden Monat, wenn potenzielle Kunden zu Ihrer Konkurrenz gehen, weil deren Seite moderner wirkt?",
+          "cta": "Darf ich Ihnen kurz im Call zeigen, wie sich die Webseite bei Ihnen in wenigen Wochen selbst amortisiert?"
+        },
+        {
+          "variant": "Wert-Transparenz",
+          "airbag": "Klar, über Geld muss man gesprochen haben.",
+          "reframing": "Unser Modell schont Ihren Cashflow, weil Sie keine hohe Einmalzahlung haben, sondern die Webseite als laufenden Betriebskosten-Posten komplett von der Steuer absetzen können.",
+          "cta": "Wollen wir uns nächsten Mittwoch kurz 10 Minuten die konkreten Zahlen anschauen?"
+        }
+      ]
+    },
+    {
+      "id": "price-upfront",
+      "category": "Sofortige Preisfrage mitten im Call",
+      "trigger": "Was kostet der Spaß überhaupt? Nennen Sie mir sofort einen Preis!",
+      "responses": [
+        {
+          "variant": "Benchmark & Bandbreiten-Pivot",
+          "airbag": "Absolut berechtigte Frage! Sie wollen direkt wissen, ob sich das rechnet.",
+          "reframing": "Bei klassischen Agenturen zahlt man oft 3.000 bis 8.000 € einmalig. Bei uns gibt es das als schlüsselfertigen Service ab 99 bis 199 € im Monat – inklusive Hosting, Pflege und allen Änderungen. Der exakte Betrag hängt davon ab, ob Sie z.B. Online-Reservierungen oder Anfragetools brauchen.",
+          "cta": "Wollen wir kurz 10 Minuten Bildschirme teilen, um zu schauen, welches Paket für Ihren Betrieb am meisten Sinn macht?"
+        },
+        {
+          "variant": "Return-on-Investment Framing",
+          "airbag": "Sehr gerne, volle Transparenz!",
+          "reframing": "Unser WaaS-Modell startet bei kleinen monatlichen Beträgen ohne hohe Einmalkosten. Wie viele Neukunden oder Aufträge bräuchten Sie pro Monat, damit sich 99 € im Monat für Sie bereits dreifach bezahlt machen?",
+          "cta": "Reicht da nicht schon ein einziger neuer Kunde im Jahr? Wollen wir uns das kurz anschauen?"
+        }
+      ]
+    },
+    {
+      "id": "bad-experience",
+      "category": "Schlechte Vorerfahrung mit Agenturen",
+      "trigger": "Ich wurde schon 2-mal von Webdesignern/Agenturen enttäuscht / abgezockt.",
+      "responses": [
+        {
+          "variant": "Empathische Validierung & Service-Garantie",
+          "airbag": "Das tut mir extrem leid zu hören – aber ganz ehrlich: Ich kann Ihren Frust zu 100 % verstehen. In unserer Branche gibt es leider viele schwarze Schafe.",
+          "reframing": "Das Problem bei klassischen Agenturen ist: Sie kassieren einmalig ab und sind danach nie wieder erreichbar. Genau deshalb haben wir das WaaS-Modell geschaffen: Wir verdienen nur, wenn Ihre Seite dauerhaft läuft und Sie rundum zufrieden sind.",
+          "cta": "Geben Sie mir 10 Minuten in einem Online-Call, um Ihnen den Unterschied persönlich zu beweisen – fair für Sie?"
+        }
+      ]
+    },
+    {
+      "id": "nephew-relative",
+      "category": "Verwandter/Neffe macht die Webseite",
+      "trigger": "Das macht die Tochter / der Neffe / ein Bekannter von mir.",
+      "responses": [
+        {
+          "variant": "Zuverlässigkeits- & Entlastungs-Angle",
+          "airbag": "Super, dass Sie da jemanden in der Familie oder im Bekanntenkreis haben, dem Sie vertrauen!",
+          "reframing": "Darf ich aber fragen: Wie schnell werden Änderungen umgesetzt, wenn Ihr Neffe mitten in der Prüfungsphase steckt oder im Urlaub ist? Müssten Sie ihm wegen jedem Tippfehler hinterherlaufen?",
+          "cta": "Sollen wir uns 10 Minuten anschauen, wie unser 24-Stunden-Garantie-Service Ihrem Bekannten die Arbeit abnimmt und Ihnen Stress erspart?"
+        }
+      ]
+    },
+    {
+      "id": "word-of-mouth",
+      "category": "NUR Mundpropaganda",
+      "trigger": "Wir leben nur von Mundpropaganda und Empfehlungen, wir brauchen kein Internet.",
+      "responses": [
+        {
+          "variant": "Empfehlungs-Bestätigungs-Trap",
+          "airbag": "Glückwunsch! Mundpropaganda ist das beste Gütesiegel für hervorragende Arbeit.",
+          "reframing": "Aber was macht ein empfohlener Kunde heute als Allererstes, wenn ihm ein Bekannter Ihren Namen nennt? Er gibt Ihren Namen bei Google auf dem Smartphone ein. Wenn er dann keine moderne Seite sieht oder die Telefonnummer suchen muss, zweifelt er und geht doch zum Mitbewerber.",
+          "cta": "Wollen wir kurz schauen, wie Ihre Webseite dafür sorgt, dass 100 % Ihrer Empfehlungen auch wirklich bei Ihnen buchen?"
+        }
+      ]
+    },
+    {
+      "id": "too-old-tech",
+      "category": "Zu alt / Kein Technik-Verständnis",
+      "trigger": "Ich bin zu alt für dieses ganze Internet-Zeug / verstehe davon nichts.",
+      "responses": [
+        {
+          "variant": "Vollservice-Entlastung",
+          "airbag": "Das müssen Sie auch gar nicht, {{KUNDE_ANREDE_NAME}}! Dafür haben Sie Ihr Kerngeschäft perfekt im Griff.",
+          "reframing": "Genau deshalb rufen wir an: Bei uns müssen Sie keinen einzigen Knopf drücken. Sie rufen uns an oder schicken eine Sprachnachricht per WhatsApp, und wir erledigen die komplette Technik für Sie.",
+          "cta": "Lassen Sie uns kurz 10 Minuten sprechen – ich erkläre es Ihnen ganz ohne Fachchinesisch. Wann passt es diese Woche?"
+        }
+      ]
+    },
+    {
+      "id": "fully-booked",
+      "category": "Voll ausgebucht",
+      "trigger": "Wir haben aktuell mehr als genug Aufträge / Gäste und sind völlig ausgebucht.",
+      "responses": [
+        {
+          "variant": "Grundrauschen & Anti-Leerlauf",
+          "airbag": "Gratulation dazu! Das ist in der aktuellen Zeit eine hervorragende Nachricht.",
+          "reframing": "Gerade WENN die Auftragsbücher voll sind, ist der beste Zeitpunkt, das digitale Fundament aufzubauen. Damit kein Loch entsteht, wenn der aktuelle Ansturm wieder nachlässt.",
+          "cta": "Lassen Sie uns doch ganz entspannt einen Termin ausmachen, um ein System vorzubereiten, das fliegend mitläuft. Wie sieht es Freitag aus?"
+        },
+        {
+          "variant": "Mitarbeiter- & Preis-Positionierung",
+          "airbag": "Klasse, das freut mich riesig für Sie!",
+          "reframing": "Wenn Sie eh schon voll sind: Nutzen Sie Ihre Webseite aktuell dazu, die lukrativsten Kunden anzuziehen, höhere Preise durchzusetzen oder händeringend gesuchte Mitarbeiter zu gewinnen?",
+          "cta": "Lassen Sie uns kurz 10 Minuten besprechen, wie Ihre Webseite von 'Aufträge gewinnen' auf 'Mitarbeiter gewinnen' umgestellt werden kann. Passt Dienstag bei Ihnen?"
+        },
+        {
+          "variant": "Automatische Entlastung",
+          "airbag": "Hervorragend. Dann läuft der Betrieb auf Hochtouren.",
+          "reframing": "Wenn Sie ausgebucht sind, bedeutet das meistens auch: Viel Stress am Telefon mit Anfragen, die Sie gar nicht mehr annehmen können. Eine intelligente Webseite sortiert unpassende Anfragen vorher aus und entlastet Ihr Team.",
+          "cta": "Wann passt es Ihnen diese Woche besser – eher morgens oder nachmittags für 10 Minuten?"
+        }
+      ]
+    }
+  ]
+}

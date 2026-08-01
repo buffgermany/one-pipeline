@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  buff-pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: buff-one-pipeline
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      - DATABASE_PATH=/app/data/sqlite.db
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    volumes:
+      - buff_pipeline_data:/app/data
+
+volumes:
+  buff_pipeline_data:

@@ -1,0 +1,46 @@
+{
+	"name": "buff-one-pipeline",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "bun --bun vite dev",
+		"build": "bun --bun vite build",
+		"preview": "bun --bun vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^7.0.1",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@tailwindcss/vite": "^4.3.0",
+		"@types/bun": "^1.3.14",
+		"@types/papaparse": "^5.5.2",
+		"@vitejs/plugin-react": "^6.0.5",
+		"better-sqlite3": "^12.11.1",
+		"drizzle-kit": "^0.31.10",
+		"svelte": "^5.56.1",
+		"svelte-adapter-bun": "^1.0.1",
+		"svelte-check": "^4.6.0",
+		"tailwindcss": "^4.3.0",
+		"typescript": "^6.0.3",
+		"vite": "^8.0.16"
+	},
+	"dependencies": {
+		"@astryxdesign/core": "^0.2.0",
+		"@types/react": "^19.2.18",
+		"@types/react-dom": "^19.2.4",
+		"cheerio": "^1.2.0",
+		"drizzle-orm": "^0.45.2",
+		"lucide-react": "^1.28.0",
+		"lucide-svelte": "^1.0.1",
+		"openai": "^6.48.0",
+		"papaparse": "^5.5.4",
+		"playwright": "^1.62.1",
+		"puppeteer": "^25.4.0",
+		"react": "^19.2.8",
+		"react-dom": "^19.2.8"
+	}
+}
