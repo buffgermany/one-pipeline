@@ -47,6 +47,8 @@
   let importedTodayCount = $state(0);
   let statsLoading = $state(true);
 
+  import { GERMAN_BUNDESLAENDER, TOP_METROPOLISES } from '$lib/data/germanCities';
+
   // Local Storage Cache Key
   const CACHE_KEY = 'buff_one_scraped_cache';
 
@@ -69,15 +71,61 @@
   // ==========================================
   // GOOGLE MAPS LIVE SCRAPER STATE & LOGIC
   // ==========================================
-  let gmapsQuery = $state('Zahnarzt 10115 Berlin');
+  let gmapsQuery = $state('Bar Leipzig');
   let gmapsMaxScrolls = $state(3);
   let gmapsEnrichWebsites = $state(true);
-  let gmapsIndustry = $state('Praxen & Gewerbe');
+  let gmapsIndustry = $state('Gastronomie & Bar');
   let gmapsStatus = $state<'idle' | 'scraping' | 'stopped' | 'success' | 'error'>('idle');
   let gmapsLeads = $state<any[]>([]);
   let gmapsError = $state<string | null>(null);
   let isSavingToQueue = $state(false);
   let saveSuccessMessage = $state<string | null>(null);
+
+  // Search History & Territory Discovery State
+  let searchHistoryList = $state<any[]>([]);
+  let selectedBundeslandId = $state<string>('sachsen');
+  let selectedNichePrefix = $state('Bar');
+  let activeStateObj = $derived(
+    GERMAN_BUNDESLAENDER.find(s => s.id === selectedBundeslandId) || GERMAN_BUNDESLAENDER[0]
+  );
+  let currentQueryHistoryWarning = $state<{ found: boolean; lastSearchDate?: string; leadsCount?: number; query?: string } | null>(null);
+
+  async function loadSearchHistory() {
+    try {
+      const res = await fetch('/api/scraper/history');
+      if (res.ok) {
+        const data = await res.json();
+        searchHistoryList = data.history || [];
+      }
+    } catch (e) {
+      console.error('Failed to load search history:', e);
+    }
+  }
+
+  async function checkQuerySearchHistory(queryStr: string) {
+    if (!queryStr || !queryStr.trim()) {
+      currentQueryHistoryWarning = null;
+      return;
+    }
+    try {
+      const res = await fetch(`/api/scraper/history?query=${encodeURIComponent(queryStr.trim())}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.previousMatch || data.existingLeadsCount > 0) {
+          currentQueryHistoryWarning = {
+            found: true,
+            query: queryStr.trim(),
+            lastSearchDate: data.previousMatch ? new Date(data.previousMatch.createdAt).toLocaleDateString('de-DE') : undefined,
+            leadsCount: data.existingLeadsCount || data.previousMatch?.leadsFound || 0
+          };
+        } else {
+          currentQueryHistoryWarning = null;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to check search history:', e);
+    }
+  }
 
   // Scraper Progress Stages
   let progressPercent = $state(0);
@@ -363,6 +411,23 @@
                 stageDetails.stage3 = 'Smart Anreicherung abgeschlossen!';
 
                 await checkScrapedDuplicates(gmapsLeads);
+
+                // Record Search Run into Search History Memory
+                try {
+                  await fetch('/api/scraper/history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      query: gmapsQuery,
+                      industry: gmapsIndustry,
+                      leadsFound: gmapsLeads.length,
+                      enrichedCount: gmapsLeads.filter(l => l.decisionMaker || l.email || l.techStack).length
+                    })
+                  });
+                  await loadSearchHistory();
+                } catch (e) {
+                  console.error('Failed to record search history:', e);
+                }
 
                 persistCache();
                 await fetchDashboardStats();
@@ -822,6 +887,7 @@
   onMount(() => {
     fetchDashboardStats();
     fetchHistory();
+    loadSearchHistory();
     loadCache();
   });
 </script>
@@ -1023,19 +1089,81 @@
                   class="bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] focus:border-[var(--color-accent-emerald)] rounded-[var(--radius-md)] px-3.5 py-2.5 text-xs text-[var(--color-ink-primary)] placeholder-[var(--color-ink-muted)] outline-none transition-colors"
                 />
 
-                <!-- PRESET SUGGESTIONS -->
-                <div class="flex items-center gap-2 flex-wrap mt-1">
-                  <span class="text-[10px] text-[var(--color-ink-muted)] font-mono">Schnellsuche:</span>
-                  {#each PRESET_QUERIES as preset}
-                    <button
-                      type="button"
-                      onclick={() => { gmapsQuery = preset; }}
-                      disabled={gmapsStatus === 'scraping'}
-                      class="text-[10px] font-mono bg-[var(--color-surface-lift)] hover:bg-[var(--color-border-subtle)] text-[var(--color-ink-secondary)] hover:text-[var(--color-ink-primary)] px-2 py-0.5 rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] transition-colors cursor-pointer"
-                    >
-                      {preset}
-                    </button>
-                  {/each}
+                <!-- DYNAMIC DUPLICATE SEARCH WARNING SHIELD -->
+                {#if currentQueryHistoryWarning?.found}
+                  <div class="bg-amber-500/10 border border-amber-500/40 rounded-[var(--radius-md)] p-3 text-xs text-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md animate-fadeIn">
+                    <div class="flex items-center gap-2.5">
+                      <AlertTriangle size={18} class="text-amber-400 shrink-0" />
+                      <div>
+                        <span class="font-bold text-amber-200">Suchbegriff bereits gesucht!</span>
+                        <p class="text-[11px] text-amber-300/80">
+                          "{currentQueryHistoryWarning.query}" wurde am {currentQueryHistoryWarning.lastSearchDate || 'vor Kurzem'} gesucht ({currentQueryHistoryWarning.leadsCount} Leads in der Datenbank).
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <a 
+                        href={`/queue?search=${encodeURIComponent(currentQueryHistoryWarning.query || '')}`}
+                        class="px-2.5 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 text-[11px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <Database size={12} />
+                        Queue öffnen ({currentQueryHistoryWarning.leadsCount})
+                      </a>
+                    </div>
+                  </div>
+                {/if}
+
+                <!-- SMART GERMAN TERRITORY & CITY DISCOVERY SELECTOR -->
+                <div class="bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] rounded-[var(--radius-md)] p-3 flex flex-col gap-2.5">
+                  <div class="flex items-center justify-between gap-2 flex-wrap border-b border-[var(--color-border-subtle)] pb-2">
+                    <span class="text-xs font-[var(--font-excon)] font-bold text-[var(--color-ink-primary)] flex items-center gap-1.5">
+                      <MapPin size={13} class="text-[var(--color-accent-emerald)]" />
+                      Intelligente Städte- & Bundesland-Auswahl (1-Klick)
+                    </span>
+                    <span class="text-[10px] font-mono text-[var(--color-ink-muted)]">
+                      80+ Deutsche Städte • Automatische Such-Historien Prüfung
+                    </span>
+                  </div>
+
+                  <!-- Bundesland / Region Tabs -->
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    {#each GERMAN_BUNDESLAENDER as state}
+                      {@const isSel = selectedBundeslandId === state.id}
+                      <button
+                        type="button"
+                        onclick={() => { selectedBundeslandId = state.id; }}
+                        class="px-2.5 py-1 rounded text-[11px] font-[var(--font-excon)] font-semibold transition-all cursor-pointer {isSel ? 'bg-[var(--color-accent-emerald)] text-[#052E16] shadow-sm' : 'bg-[var(--color-surface-lift)] border border-[var(--color-border-subtle)] text-[var(--color-ink-secondary)] hover:text-[var(--color-ink-primary)]'}"
+                      >
+                        {state.name}
+                      </button>
+                    {/each}
+                  </div>
+
+                  <!-- Cities in Selected Region -->
+                  <div class="flex items-center gap-1.5 flex-wrap pt-1">
+                    {#each activeStateObj.cities as city}
+                      {@const queryForCity = `${selectedNichePrefix} ${city}`}
+                      {@const isAlreadySearched = searchHistoryList.some(h => h.query.toLowerCase().includes(city.toLowerCase()))}
+                      
+                      <button
+                        type="button"
+                        onclick={() => {
+                          gmapsQuery = queryForCity;
+                          checkQuerySearchHistory(queryForCity);
+                        }}
+                        disabled={gmapsStatus === 'scraping'}
+                        class="px-2.5 py-1 rounded-[var(--radius-sm)] text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 border active:scale-95 {isAlreadySearched ? 'bg-[var(--color-surface-panel)] text-[var(--color-ink-muted)] border-[var(--color-border-subtle)] opacity-70' : 'bg-[var(--color-surface-lift)] hover:bg-[var(--color-border-subtle)] text-[var(--color-accent-emerald)] border-[var(--color-border-focus)] shadow-sm'}"
+                        title={isAlreadySearched ? `Gegen ${city} wurde bereits gesucht` : `Klicken, um ${queryForCity} einzufügen`}
+                      >
+                        <span>{city}</span>
+                        {#if isAlreadySearched}
+                          <span class="text-[9px] px-1 py-0.2 rounded bg-white/10 text-amber-300">✓ gesucht</span>
+                        {:else}
+                          <span class="text-[9px] px-1 py-0.2 rounded bg-[var(--color-emerald-tint)] text-[var(--color-accent-emerald)]">✨ neu</span>
+                        {/if}
+                      </button>
+                    {/each}
+                  </div>
                 </div>
               </div>
 

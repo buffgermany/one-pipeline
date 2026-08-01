@@ -58,3 +58,13 @@ export const callLogs = sqliteTable('call_logs', {
   duration: integer('duration'), // in seconds
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`)
 });
+
+export const searchHistory = sqliteTable('search_history', {
+  id: text('id').primaryKey(),
+  query: text('query').notNull(),
+  industry: text('industry'),
+  city: text('city'),
+  leadsFound: integer('leads_found').default(0),
+  enrichedCount: integer('enriched_count').default(0),
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`)
+});

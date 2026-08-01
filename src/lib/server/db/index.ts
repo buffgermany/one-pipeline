@@ -61,7 +61,20 @@ try {
     );
   `);
 
-  // 5. Inspect 'leads' table columns and auto-add ANY missing column
+  // 5. Ensure 'search_history' table exists
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS search_history (
+      id TEXT PRIMARY KEY,
+      query TEXT NOT NULL,
+      industry TEXT,
+      city TEXT,
+      leads_found INTEGER DEFAULT 0,
+      enriched_count INTEGER DEFAULT 0,
+      created_at INTEGER DEFAULT (strftime('%s', 'now'))
+    );
+  `);
+
+  // 6. Inspect 'leads' table columns and auto-add ANY missing column
   const tableInfo = sqlite.prepare("PRAGMA table_info('leads')").all() as { name: string }[];
   const existingColumns = new Set(tableInfo.map(c => c.name));
 
