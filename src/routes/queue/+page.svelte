@@ -130,28 +130,81 @@
     setTimeout(() => copiedPhoneId = null, 2000);
   }
 
-  let isEnriching = $state(false);
-  let enrichSuccessMessage = $state<string | null>(null);
+  // Real-time Batch Progress Architecture
+  let isProcessingBatch = $state(false);
+  let batchStatusLabel = $state('');
+  let batchProcessedCount = $state(0);
+  let batchTotalCount = $state(0);
+  let batchSuccessMessage = $state<string | null>(null);
 
-  async function runEnrichAndAudit(leadIds?: string[], action: 'enrich' | 'audit' | 'both' = 'both') {
-    isEnriching = true;
-    enrichSuccessMessage = null;
+  async function runEnrichAndAudit(leadIds?: string[], action: 'enrich' | 'audit' | 're-audit' | 'both' = 'both') {
+    isProcessingBatch = true;
+    batchSuccessMessage = null;
+    batchProcessedCount = 0;
+    batchTotalCount = 0;
+
+    const actionNames: Record<string, string> = {
+      enrich: 'Anreichern von Inhabern & Kontakten',
+      audit: 'Website-Audits durchführen',
+      're-audit': 'Erneutes Website-Re-Audit',
+      both: 'Anreichern & Auditen'
+    };
+
+    const actionTitle = actionNames[action] || 'Verarbeiten';
+    batchStatusLabel = `Initialisiere ${actionTitle}...`;
+
     try {
+      // Step 1: Get list of matching lead IDs
       const res = await fetch('/api/leads/enrich-audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadIds, action })
       });
-      if (res.ok) {
-        const data = await res.json();
-        enrichSuccessMessage = data.message || `${data.updatedCount} Leads wurden erfolgreich analysiert & aktualisiert.`;
-        await fetchLeads();
-        setTimeout(() => enrichSuccessMessage = null, 5000);
+
+      if (!res.ok) throw new Error('Fehler beim Abrufen der Lead-Liste.');
+      const data = await res.json();
+
+      const targetIds: string[] = data.leadIds || [];
+      batchTotalCount = targetIds.length;
+
+      if (batchTotalCount === 0) {
+        batchSuccessMessage = data.message || 'Keine passenden Leads für diese Aktion gefunden.';
+        setTimeout(() => batchSuccessMessage = null, 4000);
+        return;
       }
+
+      // Step 2: Process in chunks of 3 leads concurrently with live progress tracking
+      const chunkSize = 3;
+      let totalUpdated = 0;
+
+      for (let i = 0; i < targetIds.length; i += chunkSize) {
+        const chunk = targetIds.slice(i, i + chunkSize);
+        batchStatusLabel = `${actionTitle}: Verarbeite ${i + 1} bis ${Math.min(i + chunkSize, targetIds.length)} von ${batchTotalCount}...`;
+
+        const chunkRes = await fetch('/api/leads/enrich-audit/process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ leadIds: chunk })
+        });
+
+        if (chunkRes.ok) {
+          const chunkData = await chunkRes.json();
+          totalUpdated += chunkData.updatedCount || 0;
+        }
+
+        batchProcessedCount = Math.min(i + chunkSize, batchTotalCount);
+      }
+
+      batchSuccessMessage = `✓ Fertig! ${batchTotalCount} Leads verarbeitet, ${totalUpdated} erfolgreich aktualisiert.`;
+      selectedLeadIds = [];
+      await fetchLeads();
+      setTimeout(() => batchSuccessMessage = null, 6000);
     } catch (e: any) {
-      console.error('Failed to run enrich & audit:', e);
+      console.error('Batch process error:', e);
+      batchSuccessMessage = `⚠️ Fehler bei der Verarbeitung: ${e.message}`;
+      setTimeout(() => batchSuccessMessage = null, 6000);
     } finally {
-      isEnriching = false;
+      isProcessingBatch = false;
     }
   }
 
@@ -173,7 +226,7 @@
 <div class="min-h-screen bg-[var(--color-page-void)] text-[var(--color-ink-primary)] p-6 md:p-10 font-[var(--font-general-sans)] select-none">
   <div class="max-w-[1600px] mx-auto flex flex-col gap-6">
 
-  <!-- Header & Actions -->
+  <!-- Header Title -->
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
       <div class="flex items-center gap-2 mb-1">
@@ -189,68 +242,137 @@
         Übersicht aller gescrapten Betriebe mit doppelter Telefonnummer (G-Maps & Impressum) und E-Mail Anreicherung.
       </p>
     </div>
+  </div>
 
-    <!-- Top Action Buttons -->
-    <div class="flex items-center gap-2 flex-wrap">
+  <!-- STRUCTURED TOP ACTION TOOLBAR -->
+  <div class="bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-2xl p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 shadow-xl">
+    
+    <!-- Left: Selected Count or Overview -->
+    <div class="flex items-center gap-3">
+      {#if selectedLeadIds.length > 0}
+        <div class="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-bold font-mono">
+          <CheckCircle2 size={14} class="text-emerald-400" />
+          <span>{selectedLeadIds.length} Leads ausgewählt</span>
+          <button onclick={() => selectedLeadIds = []} class="text-xs text-neutral-400 hover:text-white underline ml-1 cursor-pointer">Auswahl aufheben</button>
+        </div>
+      {:else}
+        <div class="flex items-center gap-2 text-xs font-[var(--font-excon)] font-bold text-[var(--color-ink-primary)]">
+          <Sparkles size={16} class="text-emerald-400" />
+          <span>Automatische Anreicherungs- & Audit Pipeline</span>
+        </div>
+      {/if}
+    </div>
+
+    <!-- Right: Responsive Action Button Group -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:flex md:items-center gap-2">
+      
       {#if selectedLeadIds.length > 0}
         <button
           onclick={() => runEnrichAndAudit(selectedLeadIds, 'both')}
-          disabled={isEnriching}
-          class="flex items-center gap-1.5 bg-emerald-500 text-neutral-950 hover:bg-emerald-400 px-3.5 py-1.5 rounded-[var(--radius-md)] text-xs font-bold transition-all cursor-pointer disabled:opacity-50 shadow-md animate-bounce"
+          disabled={isProcessingBatch}
+          class="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-50 shadow-md active:scale-95"
         >
-          <Sparkles size={14} class={isEnriching ? 'animate-spin' : ''} />
-          <span>⚡ Ausgewählte ({selectedLeadIds.length}) Anreichern & Auditen</span>
+          <Sparkles size={14} class={isProcessingBatch ? 'animate-spin' : ''} />
+          <span>⚡ Ausgewählte Anreichern & Auditen</span>
+        </button>
+
+        <button
+          onclick={() => runEnrichAndAudit(selectedLeadIds, 're-audit')}
+          disabled={isProcessingBatch}
+          class="flex items-center justify-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 px-3 py-2 rounded-xl text-xs text-amber-300 font-bold transition-all cursor-pointer disabled:opacity-50 active:scale-95"
+          title="Führt für die ausgewählten Leads ein neues Re-Audit aus"
+        >
+          <RefreshCw size={14} class={isProcessingBatch ? 'animate-spin' : ''} />
+          <span>🔄 Re-Audit</span>
+        </button>
+      {:else}
+        <!-- 1. Unangereicherte Anreichern -->
+        <button
+          onclick={() => runEnrichAndAudit(undefined, 'enrich')}
+          disabled={isProcessingBatch}
+          class="flex items-center justify-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-2 rounded-xl text-xs text-emerald-400 font-bold transition-all cursor-pointer disabled:opacity-50 active:scale-95"
+          title="Sucht nach fehlenden Inhabern, Impressum-Telefonnummern und E-Mails"
+        >
+          <Sparkles size={14} class={isProcessingBatch ? 'animate-spin' : ''} />
+          <span class="truncate">⚡ Anreichern</span>
+        </button>
+
+        <!-- 2. Websites Auditen (Un-audited) -->
+        <button
+          onclick={() => runEnrichAndAudit(undefined, 'audit')}
+          disabled={isProcessingBatch}
+          class="flex items-center justify-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-2 rounded-xl text-xs text-amber-300 font-bold transition-all cursor-pointer disabled:opacity-50 active:scale-95"
+          title="Führt ein kostenloses Website-Health & Conversion-Audit für neue Leads aus"
+        >
+          <Search size={14} class={isProcessingBatch ? 'animate-spin' : ''} />
+          <span class="truncate">🔍 Auditen</span>
+        </button>
+
+        <!-- 3. Existing Websites Re-Audit -->
+        <button
+          onclick={() => runEnrichAndAudit(undefined, 're-audit')}
+          disabled={isProcessingBatch}
+          class="flex items-center justify-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-2 rounded-xl text-xs text-cyan-300 font-bold transition-all cursor-pointer disabled:opacity-50 active:scale-95"
+          title="Erneuert das Website-Audit für bereits gescrapte Websites"
+        >
+          <RefreshCw size={14} class={isProcessingBatch ? 'animate-spin' : ''} />
+          <span class="truncate">🔄 Re-Auditen</span>
         </button>
       {/if}
 
-      <button
-        onclick={() => runEnrichAndAudit(undefined, 'enrich')}
-        disabled={isEnriching}
-        class="flex items-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-[var(--radius-md)] text-xs text-emerald-400 font-bold transition-all cursor-pointer disabled:opacity-50"
-        title="Sucht nach fehlenden Inhabern, Impressum-Telefonnummern und E-Mails für alle unvollständigen Leads"
-      >
-        <Sparkles size={14} class={isEnriching ? 'animate-spin' : ''} />
-        <span>⚡ Unangereicherte Anreichern</span>
-      </button>
-
-      <button
-        onclick={() => runEnrichAndAudit(undefined, 'audit')}
-        disabled={isEnriching}
-        class="flex items-center gap-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 px-3 py-1.5 rounded-[var(--radius-md)] text-xs text-amber-300 font-bold transition-all cursor-pointer disabled:opacity-50"
-        title="Führt ein kostenloses Website-Health & Conversion-Audit für alle Leads ohne Score aus"
-      >
-        <Search size={14} class={isEnriching ? 'animate-spin' : ''} />
-        <span>🔍 Websites Auditen</span>
-      </button>
-
+      <!-- Delete Website Leads -->
       {#if leadsWithWebsiteCount > 0}
         <button
           onclick={deleteLeadsWithWebsite}
-          disabled={isDeleting}
-          class="flex items-center gap-2 bg-[var(--color-status-rose)]/10 hover:bg-[var(--color-status-rose)]/20 border border-[var(--color-status-rose)]/30 px-3 py-1.5 rounded-[var(--radius-md)] text-xs text-[var(--color-status-rose)] font-medium transition-all cursor-pointer disabled:opacity-50"
+          disabled={isDeleting || isProcessingBatch}
+          class="flex items-center justify-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-3 py-2 rounded-xl text-xs text-rose-300 font-medium transition-all cursor-pointer disabled:opacity-50 active:scale-95"
           title="Löscht alle Leads aus der Queue, die bereits eine funktionierende Website besitzen"
         >
-          <Globe size={13} />
           <Trash2 size={13} />
-          <span>Leads mit Website löschen ({leadsWithWebsiteCount})</span>
+          <span class="truncate">Löschen ({leadsWithWebsiteCount})</span>
         </button>
       {/if}
 
+      <!-- Refresh Table -->
       <button 
         onclick={fetchLeads}
-        class="flex items-center gap-2 bg-[var(--color-surface-panel)] hover:bg-[var(--color-surface-lift)] border border-[var(--color-border-subtle)] px-3 py-1.5 rounded-[var(--radius-md)] text-xs text-[var(--color-ink-secondary)] hover:text-white transition-all cursor-pointer"
+        class="flex items-center justify-center gap-1.5 bg-[var(--color-surface-lift)] hover:bg-[var(--color-border-subtle)] border border-[var(--color-border-subtle)] px-3 py-2 rounded-xl text-xs text-[var(--color-ink-secondary)] hover:text-white transition-all cursor-pointer shrink-0"
+        title="Liste jetzt neu laden"
       >
-        <RefreshCw size={14} class={loading || isEnriching ? 'animate-spin' : ''} />
-        <span>Liste aktualisieren</span>
+        <RefreshCw size={14} class={loading || isProcessingBatch ? 'animate-spin' : ''} />
       </button>
+
     </div>
   </div>
 
-  {#if enrichSuccessMessage}
+  <!-- LIVE PROGRESS & STATUS BANNER -->
+  {#if isProcessingBatch}
+    <div class="bg-gradient-to-r from-emerald-500/15 via-amber-500/15 to-cyan-500/15 border border-emerald-500/30 rounded-2xl p-4 flex flex-col gap-2 shadow-2xl backdrop-blur-xl animate-fadeIn">
+      <div class="flex items-center justify-between text-xs font-[var(--font-excon)] font-bold">
+        <div class="flex items-center gap-2 text-emerald-300">
+          <RefreshCw size={16} class="animate-spin text-emerald-400" />
+          <span>{batchStatusLabel}</span>
+        </div>
+        <span class="font-mono text-white">
+          {batchProcessedCount} / {batchTotalCount} ({batchTotalCount > 0 ? Math.round((batchProcessedCount / batchTotalCount) * 100) : 0}%)
+        </span>
+      </div>
+
+      <!-- Animated Progress Bar -->
+      <div class="w-full bg-neutral-900/80 h-2.5 rounded-full overflow-hidden border border-neutral-800">
+        <div 
+          class="h-full bg-gradient-to-r from-emerald-500 to-amber-400 rounded-full transition-all duration-300 shadow-[0_0_12px_rgba(16,185,129,0.5)]"
+          style="width: {batchTotalCount > 0 ? Math.round((batchProcessedCount / batchTotalCount) * 100) : 0}%"
+        ></div>
+      </div>
+    </div>
+  {/if}
+
+  {#if batchSuccessMessage}
     <div class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-4 py-3 rounded-xl text-xs font-bold flex items-center justify-between shadow-lg animate-fadeIn">
       <div class="flex items-center gap-2">
         <CheckCircle2 size={18} class="text-emerald-400" />
-        <span>{enrichSuccessMessage}</span>
+        <span>{batchSuccessMessage}</span>
       </div>
     </div>
   {/if}
@@ -525,16 +647,26 @@
 
                 <!-- Actions -->
                 <td class="py-3.5 px-4 text-right whitespace-nowrap">
-                  <div class="flex items-center justify-end gap-2">
+                  <div class="flex items-center justify-end gap-1.5">
                     {#if b.website}
                       <button
                         onclick={() => runEnrichAndAudit([b.id], 'both')}
-                        disabled={isEnriching}
+                        disabled={isProcessingBatch}
                         class="px-2 py-1 rounded-[var(--radius-md)] bg-[var(--color-surface-lift)] hover:bg-[var(--color-border-subtle)] text-[var(--color-accent-emerald)] border border-[var(--color-border-focus)] transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1 text-[11px] font-bold"
                         title="Website Inhaber, Kontakte & Audit-Score für diesen Lead jetzt nachladen"
                       >
-                        <Sparkles size={12} class={isEnriching ? 'animate-spin' : ''} />
-                        <span>Anreichern & Auditen</span>
+                        <Sparkles size={12} class={isProcessingBatch ? 'animate-spin' : ''} />
+                        <span>Anreichern</span>
+                      </button>
+
+                      <button
+                        onclick={() => runEnrichAndAudit([b.id], 're-audit')}
+                        disabled={isProcessingBatch}
+                        class="px-2 py-1 rounded-[var(--radius-md)] bg-[var(--color-surface-lift)] hover:bg-[var(--color-border-subtle)] text-cyan-300 border border-cyan-500/30 transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center gap-1 text-[11px] font-bold"
+                        title="Erneutes Website-Audit für diesen Lead ausführen"
+                      >
+                        <RefreshCw size={11} class={isProcessingBatch ? 'animate-spin' : ''} />
+                        <span>Re-Audit</span>
                       </button>
                     {/if}
 
