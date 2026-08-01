@@ -311,7 +311,8 @@ export async function enrichWebsite(
       // Perform 100% Free Deep Website Audit & Multi-Category Scoring
       if (targetUrl === baseUrl || !contacts.auditScore) {
         try {
-          const audit = auditWebsite(targetUrl, htmlText, $);
+          const finalUrl = response.url || targetUrl;
+          const audit = auditWebsite(finalUrl, htmlText, $, response);
           contacts.auditScore = audit.overallScore;
           contacts.auditData = JSON.stringify(audit);
           contacts.auditResult = audit;

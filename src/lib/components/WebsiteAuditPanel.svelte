@@ -76,7 +76,7 @@
             {/if}
           </h3>
           <p class="text-[11px] text-neutral-400 mt-0.5">
-            Automatische 6-Kriterium Analyse der Kundenwebsite.
+            Automatische Deep-Analyse von Buchungssystemen, Technik, SEO & Mobile-Readiness.
           </p>
         </div>
       </div>
@@ -210,29 +210,43 @@
           Gemessene Kennzahlen & Feature-Matrix:
         </span>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
-          <div class="p-2 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] font-mono">
+          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
             <span class="text-neutral-500 block text-[9px]">CMS / SYSTEM</span>
-            <span class="font-bold text-white">{parsedAudit.stats.cmsName || 'Custom'}</span>
+            <span class="font-bold text-white truncate block" title={parsedAudit.stats.cmsName}>{parsedAudit.stats.cmsName || 'Custom'}</span>
           </div>
 
-          <div class="p-2 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
-            <span class="text-neutral-500 block text-[9px]">SEITENGRÖSSE</span>
-            <span class="font-bold text-white">{parsedAudit.stats.pageWeightKb} KB</span>
-          </div>
-
-          <div class="p-2 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
-            <span class="text-neutral-500 block text-[9px]">HTTPS / SSL</span>
+          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
+            <span class="text-neutral-500 block text-[9px]">HTTPS / SSL CERT</span>
             <span class="font-bold {parsedAudit.stats.hasHttps ? 'text-emerald-400' : 'text-rose-400'}">
-              {parsedAudit.stats.hasHttps ? '✓ Aktiv' : '❌ Fehlt (HTTP)'}
+              {parsedAudit.stats.hasHttps ? '✓ Aktiv (HTTPS)' : '❌ Fehlt (HTTP)'}
             </span>
           </div>
 
-          <div class="p-2 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
+          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
             <span class="text-neutral-500 block text-[9px]">TERMINBUCHUNG</span>
-            <span class="font-bold {parsedAudit.stats.hasOnlineBooking ? 'text-emerald-400' : 'text-amber-400'}">
-              {parsedAudit.stats.hasOnlineBooking ? `✓ ${parsedAudit.stats.bookingProvider}` : '❌ Keine'}
+            <span class="font-bold {parsedAudit.stats.hasOnlineBooking ? 'text-emerald-400' : 'text-amber-400'} truncate block" title={parsedAudit.stats.bookingProvider}>
+              {parsedAudit.stats.hasOnlineBooking ? `✓ ${parsedAudit.stats.bookingProvider}` : '❌ Keine Buchung'}
             </span>
+          </div>
+
+          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
+            <span class="text-neutral-500 block text-[9px]">MOBIL-ANRUF (TEL:)</span>
+            <span class="font-bold {parsedAudit.stats.hasTelLink ? 'text-emerald-400' : 'text-rose-400'}">
+              {parsedAudit.stats.hasTelLink ? '✓ Vorhanden' : '❌ Fehlt'}
+            </span>
+          </div>
+
+          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
+            <span class="text-neutral-500 block text-[9px]">DSGVO BANNER</span>
+            <span class="font-bold {parsedAudit.stats.hasCookieBanner ? 'text-emerald-400' : 'text-neutral-400'}">
+              {parsedAudit.stats.hasCookieBanner ? `✓ ${parsedAudit.stats.cookieBannerProvider}` : 'Nicht erkannt'}
+            </span>
+          </div>
+
+          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
+            <span class="text-neutral-500 block text-[9px]">SEITENGRÖSSE & SPEED</span>
+            <span class="font-bold text-white">{parsedAudit.stats.pageWeightKb} KB</span>
           </div>
         </div>
       </div>
