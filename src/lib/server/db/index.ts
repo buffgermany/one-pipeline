@@ -3,6 +3,7 @@ import { Database } from 'bun:sqlite';
 import * as schema from './schema';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 // Support persistent volume path for Docker & Coolify deployments
 const dbPath = process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'sqlite.db');
@@ -26,17 +27,83 @@ try {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL DEFAULT '',
+      avatar TEXT,
+      role TEXT,
       created_at INTEGER DEFAULT (strftime('%s', 'now'))
     );
   `);
 
-  // 2. Ensure default agent user exists
+  // Inspect 'users' table columns and auto-add missing columns
+  const userTableInfo = sqlite.prepare("PRAGMA table_info('users')").all() as { name: string }[];
+  const userCols = new Set(userTableInfo.map(c => c.name));
+
+  if (!userCols.has('password_hash')) {
+    sqlite.exec(`ALTER TABLE users ADD COLUMN password_hash TEXT NOT NULL DEFAULT '';`);
+  }
+  if (!userCols.has('avatar')) {
+    sqlite.exec(`ALTER TABLE users ADD COLUMN avatar TEXT;`);
+  }
+  if (!userCols.has('role')) {
+    sqlite.exec(`ALTER TABLE users ADD COLUMN role TEXT;`);
+  }
+
+  // Helper to hash password synchronously for seeding
+  function getSeedHash(pass: string): string {
+    if (typeof Bun !== 'undefined' && Bun.password?.hashSync) {
+      return Bun.password.hashSync(pass, { algorithm: 'argon2id', timeCost: 3, memoryCost: 65536 });
+    }
+    const salt = crypto.randomBytes(16).toString('hex');
+    const derivedKey = crypto.scryptSync(pass, salt, 64);
+    return `scrypt:${salt}:${derivedKey.toString('hex')}`;
+  }
+
+  const defaultUsers = [
+    { id: 'agent-felix', name: 'Felix', email: 'felix@buff.de', pass: 'felix123', avatar: 'FX', role: 'Sales Lead' },
+    { id: 'agent-leon', name: 'Leon', email: 'leon@buff.de', pass: 'leon123', avatar: 'LN', role: 'Sales Co-Pilot' },
+    { id: 'agent-luca', name: 'Luca', email: 'luca@buff.de', pass: 'luca123', avatar: 'LC', role: 'Sales Co-Pilot' }
+  ];
+
+  for (const u of defaultUsers) {
+    const existing = sqlite.prepare('SELECT id, password_hash FROM users WHERE id = ?').get(u.id) as { id: string; password_hash: string } | undefined;
+    if (!existing) {
+      const hash = getSeedHash(u.pass);
+      sqlite.prepare(`
+        INSERT INTO users (id, name, email, password_hash, avatar, role)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(u.id, u.name, u.email, hash, u.avatar, u.role);
+      console.log(`👤 [Auth Seed] Initialized user profile: ${u.name} (${u.id})`);
+    } else if (!existing.password_hash || existing.password_hash === '') {
+      const hash = getSeedHash(u.pass);
+      sqlite.prepare('UPDATE users SET password_hash = ?, avatar = ?, role = ? WHERE id = ?').run(hash, u.avatar, u.role, u.id);
+      console.log(`👤 [Auth Seed] Updated password hash for user profile: ${u.name}`);
+    }
+  }
+
+  // 2. Ensure 'sessions' table exists
   sqlite.exec(`
-    INSERT OR IGNORE INTO users (id, name, email)
-    VALUES ('agent-felix', 'Felix Krone', 'felix@buff.de');
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id),
+      ip_address TEXT,
+      user_agent TEXT,
+      expires_at INTEGER NOT NULL,
+      created_at INTEGER DEFAULT (strftime('%s', 'now'))
+    );
   `);
 
-  // 3. Ensure 'leads' table exists
+  // 3. Ensure 'login_attempts' table exists
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS login_attempts (
+      id TEXT PRIMARY KEY,
+      ip_address TEXT NOT NULL,
+      user_id TEXT,
+      attempted_at INTEGER DEFAULT (strftime('%s', 'now')),
+      success INTEGER NOT NULL
+    );
+  `);
+
+  // 4. Ensure 'leads' table exists
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS leads (
       id TEXT PRIMARY KEY,
@@ -48,7 +115,7 @@ try {
     );
   `);
 
-  // 4. Ensure 'call_logs' table exists
+  // 5. Ensure 'call_logs' table exists
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS call_logs (
       id TEXT PRIMARY KEY,
@@ -61,7 +128,7 @@ try {
     );
   `);
 
-  // 5. Ensure 'search_history' table exists
+  // 6. Ensure 'search_history' table exists
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS search_history (
       id TEXT PRIMARY KEY,
@@ -74,7 +141,7 @@ try {
     );
   `);
 
-  // 6. Inspect 'leads' table columns and auto-add ANY missing column
+  // Inspect 'leads' table columns and auto-add ANY missing column
   const tableInfo = sqlite.prepare("PRAGMA table_info('leads')").all() as { name: string }[];
   const existingColumns = new Set(tableInfo.map(c => c.name));
 

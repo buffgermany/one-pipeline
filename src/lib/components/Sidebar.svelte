@@ -9,10 +9,10 @@
   import CheckCircle2 from 'lucide-svelte/icons/check-circle-2';
   import PanelLeftClose from 'lucide-svelte/icons/panel-left-close';
   import PanelLeftOpen from 'lucide-svelte/icons/panel-left-open';
-  import HelpCircle from 'lucide-svelte/icons/help-circle';
   import Box from 'lucide-svelte/icons/box';
   import ChevronDown from 'lucide-svelte/icons/chevron-down';
   import Building2 from 'lucide-svelte/icons/building-2';
+  import LogOut from 'lucide-svelte/icons/log-out';
 
   interface Props {
     collapsed?: boolean;
@@ -20,6 +20,24 @@
   }
 
   let { collapsed = $bindable(false), onToggle }: Props = $props();
+
+  let currentUser = $derived($page.data.user || {
+    id: 'agent-felix',
+    name: 'Felix',
+    email: 'felix@buff.de',
+    avatar: 'FX',
+    role: 'Sales Lead'
+  });
+
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    } catch (err) {
+      console.error('Logout error:', err);
+      window.location.href = '/login';
+    }
+  }
 
   function toggleSidebar() {
     collapsed = !collapsed;
@@ -148,33 +166,49 @@
     <!-- User / Profile -->
     <div class="flex items-center justify-between px-2 py-1.5 rounded-[var(--radius-md)] hover:bg-[var(--color-surface-lift)]/50 transition-colors">
       <div class="flex items-center gap-2.5 min-w-0">
-        <div class="w-6 h-6 rounded-full bg-[var(--color-accent-emerald)]/20 border border-[var(--color-accent-emerald)]/40 flex items-center justify-center text-[10px] font-bold text-[var(--color-accent-emerald)] font-[var(--font-mono)] shrink-0">
-          FX
+        <div class="w-6.5 h-6.5 rounded-full bg-[var(--color-accent-emerald)]/20 border border-[var(--color-accent-emerald)]/40 flex items-center justify-center text-[10px] font-bold text-[var(--color-accent-emerald)] font-[var(--font-mono)] shrink-0">
+          {currentUser.avatar || currentUser.name.slice(0, 2).toUpperCase()}
         </div>
         {#if !collapsed}
           <div class="flex flex-col min-w-0">
-            <span class="text-[12px] font-[var(--font-excon)] font-semibold text-[var(--color-ink-primary)] truncate leading-none">Felix</span>
-            <span class="text-[10px] text-[var(--color-ink-muted)] truncate leading-none mt-0.5">Sales Co-Pilot</span>
+            <span class="text-[12px] font-[var(--font-excon)] font-semibold text-[var(--color-ink-primary)] truncate leading-none">{currentUser.name}</span>
+            <span class="text-[10px] text-[var(--color-ink-muted)] truncate leading-none mt-0.5">{currentUser.role || 'Sales'}</span>
           </div>
         {/if}
       </div>
 
       {#if !collapsed}
-        <button 
-          onclick={toggleSidebar}
-          class="p-1 text-[var(--color-ink-muted)] hover:text-[var(--color-ink-primary)] rounded-[var(--radius-sm)] hover:bg-[var(--color-surface-lift)] transition-colors"
-          title="Collapse sidebar (⌘\)"
-        >
-          <PanelLeftClose size={15} />
-        </button>
+        <div class="flex items-center gap-1">
+          <button 
+            onclick={handleLogout}
+            class="p-1 text-[var(--color-ink-muted)] hover:text-red-400 rounded-[var(--radius-sm)] hover:bg-[var(--color-surface-lift)] transition-colors"
+            title="Profil wechseln / Abmelden"
+          >
+            <LogOut size={15} />
+          </button>
+          <button 
+            onclick={toggleSidebar}
+            class="p-1 text-[var(--color-ink-muted)] hover:text-[var(--color-ink-primary)] rounded-[var(--radius-sm)] hover:bg-[var(--color-surface-lift)] transition-colors"
+            title="Sidebar einklappen (⌘\)"
+          >
+            <PanelLeftClose size={15} />
+          </button>
+        </div>
       {/if}
     </div>
 
     {#if collapsed}
       <button 
+        onclick={handleLogout}
+        class="w-full flex justify-center py-1.5 text-[var(--color-ink-muted)] hover:text-red-400 rounded-[var(--radius-sm)] hover:bg-[var(--color-surface-lift)] transition-colors"
+        title="Profil wechseln / Abmelden"
+      >
+        <LogOut size={16} />
+      </button>
+      <button 
         onclick={toggleSidebar}
         class="w-full flex justify-center py-1.5 text-[var(--color-ink-muted)] hover:text-[var(--color-ink-primary)] rounded-[var(--radius-sm)] hover:bg-[var(--color-surface-lift)] transition-colors"
-        title="Expand sidebar (⌘\)"
+        title="Sidebar ausklappen (⌘\)"
       >
         <PanelLeftOpen size={16} />
       </button>

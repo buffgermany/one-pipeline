@@ -455,6 +455,8 @@
     return formatted.includes('</div>') ? formatted + '</p></div>' : formatted;
   }
 
+  let currentAgentId = $derived($page.data.user?.id || 'agent-felix');
+
   async function pullNextLead() {
     loadingLead = true;
     callStarted = false;
@@ -469,7 +471,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          agentId: 'agent-felix',
+          agentId: currentAgentId,
           targetLeadId 
         })
       });
@@ -559,7 +561,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           leadId: lead.id,
-          agentId: 'agent-felix',
+          agentId: currentAgentId,
           outcome: 'Wiedervorlage',
           notes: callOutcomeNotes,
           wiedervorlageNote: wiedervorlageNotes,
@@ -591,7 +593,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           leadId: lead.id,
-          agentId: 'agent-felix',
+          agentId: currentAgentId,
           outcome: outcomeLabel,
           notes: callOutcomeNotes,
           duration: callTimerSeconds
