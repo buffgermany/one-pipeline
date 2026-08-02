@@ -18,6 +18,7 @@
   import Clock from 'lucide-svelte/icons/clock';
   import Lock from 'lucide-svelte/icons/lock';
   import MapPin from 'lucide-svelte/icons/map-pin';
+  import ChevronDown from 'lucide-svelte/icons/chevron-down';
 
   let { auditData, auditScore = null } = $props<{
     auditData?: any;
@@ -37,16 +38,21 @@
   let score = $derived(parsedAudit?.overallScore ?? auditScore ?? 0);
   let copiedPitchIndex = $state<number | null>(null);
 
+  // Accordion toggle states (collapsed by default as requested)
+  let problemsOpen = $state(false);
+  let pitchOpen = $state(false);
+  let strengthsOpen = $state(false);
+
   function getScoreBadgeClass(val: number) {
     if (val >= 80) return 'text-[var(--color-accent-emerald)] border-[var(--color-emerald-border)] bg-[var(--color-emerald-tint)]';
     if (val >= 50) return 'text-[var(--color-status-amber)] border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.12)]';
     return 'text-[var(--color-status-rose)] border-[rgba(244,63,94,0.3)] bg-[rgba(244,63,94,0.12)]';
   }
 
-  function getBarColorClass(val: number) {
-    if (val >= 80) return 'bg-[var(--color-accent-emerald)]';
-    if (val >= 50) return 'bg-[var(--color-status-amber)]';
-    return 'bg-[var(--color-status-rose)]';
+  function getCircleColor(val: number) {
+    if (val >= 80) return '#10B981';
+    if (val >= 50) return '#F59E0B';
+    return '#F43F5E';
   }
 
   async function copyPitch(text: string, index: number) {
@@ -123,15 +129,15 @@
 
             {#if score < 50}
               <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                🔥 Redesign & WaaS Potential
+                Redesign & WaaS Potential
               </span>
             {:else if score < 80}
               <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                ⚡ Ausbaufähig
+                Ausbaufähig
               </span>
             {:else}
               <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                ✅ Gut optimiert
+                Gut optimiert
               </span>
             {/if}
           </div>
@@ -142,196 +148,298 @@
       </div>
     </div>
 
-    <!-- 6 SUB-CATEGORY SCORE BARS -->
+    <!-- 6 SUB-CATEGORY SCORE CARDS WITH SVG CIRCULAR PROGRESS RINGS -->
     {#if parsedAudit.scores}
+      {@const mobileScore = parsedAudit.scores.mobileUX ?? 0}
+      {@const dsgvoScore = parsedAudit.scores.securityDSGVO ?? parsedAudit.scores.security ?? 0}
+      {@const conversionScore = parsedAudit.scores.conversionLeads ?? parsedAudit.scores.conversion ?? 0}
+      {@const seoScore = parsedAudit.scores.localSEO ?? parsedAudit.scores.seo ?? 0}
+      {@const speedScore = parsedAudit.scores.performance ?? 0}
+      {@const techScore = parsedAudit.scores.techModernity ?? 0}
+
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
         
-        <!-- Mobile & UX -->
-        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
-              <Smartphone size={13} class="text-[var(--color-accent-emerald)]" />
-              Mobil & UX
+        <!-- 1. Mobile & UX -->
+        <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex items-center justify-between gap-2 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Smartphone size={13} class="text-[var(--color-accent-emerald)] shrink-0" />
+              <span>Mobil & UX</span>
             </span>
-            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.mobileUX}%</span>
+            <span class="text-xs font-bold text-[var(--color-ink-primary)]">
+              {mobileScore < 50 ? 'Optimierung' : (mobileScore < 80 ? 'Gute Basis' : 'Sehr gut')}
+            </span>
           </div>
-          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
-            <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.mobileUX)}" style="width: {parsedAudit.scores.mobileUX}%"></div>
+
+          <div class="relative w-10 h-10 flex items-center justify-center shrink-0">
+            <svg class="w-10 h-10 transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-[var(--color-surface-lift)]" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path stroke-width="3" stroke-dasharray="100, 100" stroke-dashoffset={100 - mobileScore} stroke-linecap="round" stroke={getCircleColor(mobileScore)} fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="absolute text-[11px] font-bold font-[var(--font-mono)] text-[var(--color-ink-primary)]">{mobileScore}%</span>
           </div>
         </div>
 
-        <!-- Security & DSGVO -->
-        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
-              <ShieldCheck size={13} class="text-[var(--color-accent-emerald)]" />
-              DSGVO & Recht
+        <!-- 2. DSGVO & Recht -->
+        <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex items-center justify-between gap-2 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <ShieldCheck size={13} class="text-[var(--color-accent-emerald)] shrink-0" />
+              <span>DSGVO & Recht</span>
             </span>
-            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.securityDSGVO ?? parsedAudit.scores.security ?? 0}%</span>
+            <span class="text-xs font-bold text-[var(--color-ink-primary)]">
+              {dsgvoScore < 50 ? 'Risiko' : (dsgvoScore < 80 ? 'Teilweise' : 'Konform')}
+            </span>
           </div>
-          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
-            <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.securityDSGVO ?? parsedAudit.scores.security ?? 0)}" style="width: {parsedAudit.scores.securityDSGVO ?? parsedAudit.scores.security ?? 0}%"></div>
+
+          <div class="relative w-10 h-10 flex items-center justify-center shrink-0">
+            <svg class="w-10 h-10 transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-[var(--color-surface-lift)]" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path stroke-width="3" stroke-dasharray="100, 100" stroke-dashoffset={100 - dsgvoScore} stroke-linecap="round" stroke={getCircleColor(dsgvoScore)} fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="absolute text-[11px] font-bold font-[var(--font-mono)] text-[var(--color-ink-primary)]">{dsgvoScore}%</span>
           </div>
         </div>
 
-        <!-- Conversion & Leads -->
-        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
-              <Target size={13} class="text-[var(--color-accent-emerald)]" />
-              Conversion & Funnel
+        <!-- 3. Conversion & Funnel -->
+        <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex items-center justify-between gap-2 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Target size={13} class="text-[var(--color-accent-emerald)] shrink-0" />
+              <span>Conversion</span>
             </span>
-            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.conversionLeads ?? parsedAudit.scores.conversion ?? 0}%</span>
+            <span class="text-xs font-bold text-[var(--color-ink-primary)]">
+              {conversionScore < 50 ? 'Gering' : (conversionScore < 80 ? 'Mittel' : 'Hoch')}
+            </span>
           </div>
-          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
-            <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.conversionLeads ?? parsedAudit.scores.conversion ?? 0)}" style="width: {parsedAudit.scores.conversionLeads ?? parsedAudit.scores.conversion ?? 0}%"></div>
+
+          <div class="relative w-10 h-10 flex items-center justify-center shrink-0">
+            <svg class="w-10 h-10 transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-[var(--color-surface-lift)]" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path stroke-width="3" stroke-dasharray="100, 100" stroke-dashoffset={100 - conversionScore} stroke-linecap="round" stroke={getCircleColor(conversionScore)} fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="absolute text-[11px] font-bold font-[var(--font-mono)] text-[var(--color-ink-primary)]">{conversionScore}%</span>
           </div>
         </div>
 
-        <!-- Local SEO -->
-        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
-              <Search size={13} class="text-[var(--color-accent-emerald)]" />
-              Local SEO & SERP
+        <!-- 4. Local SEO & SERP -->
+        <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex items-center justify-between gap-2 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Search size={13} class="text-[var(--color-accent-emerald)] shrink-0" />
+              <span>Local SEO</span>
             </span>
-            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.localSEO ?? parsedAudit.scores.seo ?? 0}%</span>
+            <span class="text-xs font-bold text-[var(--color-ink-primary)]">
+              {seoScore < 50 ? 'Schwach' : (seoScore < 80 ? 'Solide' : 'Aktiv')}
+            </span>
           </div>
-          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
-            <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.localSEO ?? parsedAudit.scores.seo ?? 0)}" style="width: {parsedAudit.scores.localSEO ?? parsedAudit.scores.seo ?? 0}%"></div>
+
+          <div class="relative w-10 h-10 flex items-center justify-center shrink-0">
+            <svg class="w-10 h-10 transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-[var(--color-surface-lift)]" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path stroke-width="3" stroke-dasharray="100, 100" stroke-dashoffset={100 - seoScore} stroke-linecap="round" stroke={getCircleColor(seoScore)} fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="absolute text-[11px] font-bold font-[var(--font-mono)] text-[var(--color-ink-primary)]">{seoScore}%</span>
           </div>
         </div>
 
-        <!-- Speed & Code -->
-        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
-              <Zap size={13} class="text-[var(--color-accent-emerald)]" />
-              Speed & Assets
+        <!-- 5. Speed & Assets -->
+        <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex items-center justify-between gap-2 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Zap size={13} class="text-[var(--color-accent-emerald)] shrink-0" />
+              <span>Speed</span>
             </span>
-            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.performance}%</span>
+            <span class="text-xs font-bold text-[var(--color-ink-primary)]">
+              {speedScore < 50 ? 'Langsam' : (speedScore < 80 ? 'Mittel' : 'Schnell')}
+            </span>
           </div>
-          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
-            <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.performance)}" style="width: {parsedAudit.scores.performance}%"></div>
+
+          <div class="relative w-10 h-10 flex items-center justify-center shrink-0">
+            <svg class="w-10 h-10 transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-[var(--color-surface-lift)]" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path stroke-width="3" stroke-dasharray="100, 100" stroke-dashoffset={100 - speedScore} stroke-linecap="round" stroke={getCircleColor(speedScore)} fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="absolute text-[11px] font-bold font-[var(--font-mono)] text-[var(--color-ink-primary)]">{speedScore}%</span>
           </div>
         </div>
 
-        <!-- Tech Modernity -->
-        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-xs">
-            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
-              <Code size={13} class="text-[var(--color-accent-emerald)]" />
-              Tech Stack
+        <!-- 6. Tech Modernity -->
+        <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex items-center justify-between gap-2 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider flex items-center gap-1.5 truncate">
+              <Code size={13} class="text-[var(--color-accent-emerald)] shrink-0" />
+              <span>Tech Stack</span>
             </span>
-            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.techModernity}%</span>
+            <span class="text-xs font-bold text-[var(--color-ink-primary)]">
+              {techScore < 50 ? 'Veraltet' : (techScore < 80 ? 'Standard' : 'Modern')}
+            </span>
           </div>
-          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
-            <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.techModernity)}" style="width: {parsedAudit.scores.techModernity}%"></div>
+
+          <div class="relative w-10 h-10 flex items-center justify-center shrink-0">
+            <svg class="w-10 h-10 transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-[var(--color-surface-lift)]" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path stroke-width="3" stroke-dasharray="100, 100" stroke-dashoffset={100 - techScore} stroke-linecap="round" stroke={getCircleColor(techScore)} fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="absolute text-[11px] font-bold font-[var(--font-mono)] text-[var(--color-ink-primary)]">{techScore}%</span>
           </div>
         </div>
 
       </div>
     {/if}
 
-    <!-- COLD CALL TALKING POINTS / PITCH ARGUMENTS (WaaS & REDESIGN) -->
-    {#if parsedAudit.pitchPoints && parsedAudit.pitchPoints.length > 0}
-      <div class="bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.25)] rounded-[var(--radius-md)] p-3.5 flex flex-col gap-2.5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2 text-xs font-bold text-[var(--color-status-amber)] font-[var(--font-excon)]">
-            <PhoneCall size={14} class="shrink-0" />
-            <span>Verkaufsargumente für Website-Relaunch & WaaS Flatrate</span>
-          </div>
-          <span class="text-[10px] text-[var(--color-ink-muted)] font-mono">
-            {parsedAudit.pitchPoints.length} Sätze
-          </span>
-        </div>
-
-        <ul class="flex flex-col gap-2">
-          {#each parsedAudit.pitchPoints as pitch, idx}
-            <li class="text-xs text-[var(--color-ink-primary)] bg-[var(--color-surface-panel)] border border-[rgba(245,158,11,0.18)] p-2.5 rounded-[var(--radius-sm)] flex items-start justify-between gap-3 leading-relaxed group">
-              <div class="flex items-start gap-2">
-                <span class="text-[var(--color-status-amber)] font-bold font-mono text-sm leading-none mt-0.5">•</span>
-                <span>{pitch}</span>
-              </div>
-              <button
-                onclick={() => copyPitch(pitch, idx)}
-                class="opacity-60 hover:opacity-100 transition-opacity p-1 text-[var(--color-ink-muted)] hover:text-[var(--color-status-amber)] shrink-0 cursor-pointer"
-                title="Satz kopieren"
-              >
-                {#if copiedPitchIndex === idx}
-                  <Check size={13} class="text-[var(--color-accent-emerald)]" />
-                {:else}
-                  <Copy size={13} />
-                {/if}
-              </button>
-            </li>
-          {/each}
-        </ul>
-      </div>
-    {/if}
-
-    <!-- CONCRETE PROBLEMS & DEFICITS -->
+    <!-- 3 ACCORDIONS (UNIFIED DESIGN, COLLAPSED BY DEFAULT) -->
+    
+    <!-- ACCORDION 1: ERKANNTE SCHWACHSTELLEN & RELAUNCH-POTENZIALE -->
     {#if parsedAudit.problems && parsedAudit.problems.length > 0}
       <div class="flex flex-col gap-2">
-        <div class="flex items-center gap-2 text-xs font-bold text-[var(--color-status-rose)] font-[var(--font-excon)]">
-          <ShieldAlert size={14} class="shrink-0" />
-          <span>Erkannte Schwachstellen & Relaunch-Potenziale ({parsedAudit.problems.length})</span>
-        </div>
-        <div class="flex flex-col gap-1.5">
-          {#each parsedAudit.problems as problem}
-            <div class="p-2.5 rounded-[var(--radius-sm)] bg-[rgba(244,63,94,0.08)] border border-[rgba(244,63,94,0.2)] text-xs text-[var(--color-status-rose)] flex items-start gap-2">
-              <AlertTriangle size={14} class="shrink-0 mt-0.5" />
-              <span class="leading-normal">{problem}</span>
-            </div>
-          {/each}
-        </div>
+        <button
+          onclick={() => problemsOpen = !problemsOpen}
+          class="w-full p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[rgba(244,63,94,0.25)] hover:border-[rgba(244,63,94,0.4)] flex items-center justify-between gap-3 text-left transition-all cursor-pointer active:scale-[0.98]"
+        >
+          <div class="flex items-center gap-2 min-w-0">
+            <ShieldAlert size={15} class="text-[var(--color-status-rose)] shrink-0" />
+            <span class="text-xs font-bold text-[var(--color-status-rose)] font-[var(--font-excon)] truncate">
+              Erkannte Schwachstellen & Relaunch-Potenziale
+            </span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-[var(--font-mono)] bg-[rgba(244,63,94,0.15)] text-[var(--color-status-rose)] border border-[rgba(244,63,94,0.3)] shrink-0">
+              {parsedAudit.problems.length}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-1.5 text-xs text-[var(--color-ink-muted)] shrink-0">
+            <span>{problemsOpen ? 'Einklappen' : 'Ausklappen'}</span>
+            <ChevronDown size={14} class="transition-transform duration-200 {problemsOpen ? 'rotate-180' : ''}" />
+          </div>
+        </button>
+
+        {#if problemsOpen}
+          <div class="flex flex-col gap-1.5 pl-1 pt-1">
+            {#each parsedAudit.problems as problem}
+              <div class="p-2.5 rounded-[var(--radius-sm)] bg-[rgba(244,63,94,0.08)] border border-[rgba(244,63,94,0.2)] text-xs text-[var(--color-status-rose)] flex items-start gap-2">
+                <AlertTriangle size={14} class="shrink-0 mt-0.5" />
+                <span class="leading-normal">{problem}</span>
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
     {/if}
 
-    <!-- POSITIVE HIGHLIGHTS -->
+    <!-- ACCORDION 2: VERKAUFSARGUMENTE FÜR WEBSITE-RELAUNCH & WAAS-FLATRATE -->
+    {#if parsedAudit.pitchPoints && parsedAudit.pitchPoints.length > 0}
+      <div class="flex flex-col gap-2">
+        <button
+          onclick={() => pitchOpen = !pitchOpen}
+          class="w-full p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[rgba(245,158,11,0.25)] hover:border-[rgba(245,158,11,0.4)] flex items-center justify-between gap-3 text-left transition-all cursor-pointer active:scale-[0.98]"
+        >
+          <div class="flex items-center gap-2 min-w-0">
+            <PhoneCall size={15} class="text-[var(--color-status-amber)] shrink-0" />
+            <span class="text-xs font-bold text-[var(--color-status-amber)] font-[var(--font-excon)] truncate">
+              Verkaufsargumente für Website-Relaunch & WaaS-Flatrate
+            </span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-[var(--font-mono)] bg-[rgba(245,158,11,0.15)] text-[var(--color-status-amber)] border border-[rgba(245,158,11,0.3)] shrink-0">
+              {parsedAudit.pitchPoints.length} Sätze
+            </span>
+          </div>
+
+          <div class="flex items-center gap-1.5 text-xs text-[var(--color-ink-muted)] shrink-0">
+            <span>{pitchOpen ? 'Einklappen' : 'Ausklappen'}</span>
+            <ChevronDown size={14} class="transition-transform duration-200 {pitchOpen ? 'rotate-180' : ''}" />
+          </div>
+        </button>
+
+        {#if pitchOpen}
+          <ul class="flex flex-col gap-2 pl-1 pt-1">
+            {#each parsedAudit.pitchPoints as pitch, idx}
+              <li class="text-xs text-[var(--color-ink-primary)] bg-[var(--color-surface-panel)] border border-[rgba(245,158,11,0.18)] p-2.5 rounded-[var(--radius-sm)] flex items-start justify-between gap-3 leading-relaxed group">
+                <div class="flex items-start gap-2">
+                  <span class="text-[var(--color-status-amber)] font-bold font-[var(--font-mono)] text-sm leading-none mt-0.5">•</span>
+                  <span>{pitch}</span>
+                </div>
+                <button
+                  onclick={() => copyPitch(pitch, idx)}
+                  class="opacity-60 hover:opacity-100 transition-opacity p-1 text-[var(--color-ink-muted)] hover:text-[var(--color-status-amber)] shrink-0 cursor-pointer"
+                  title="Satz kopieren"
+                >
+                  {#if copiedPitchIndex === idx}
+                    <Check size={13} class="text-[var(--color-accent-emerald)]" />
+                  {:else}
+                    <Copy size={13} />
+                  {/if}
+                </button>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </div>
+    {/if}
+
+    <!-- ACCORDION 3: BESTEHENDE STÄRKEN DER WEBSITE -->
     {#if parsedAudit.positiveHighlights && parsedAudit.positiveHighlights.length > 0}
       <div class="flex flex-col gap-2">
-        <div class="flex items-center gap-2 text-xs font-bold text-[var(--color-accent-emerald)] font-[var(--font-excon)]">
-          <CheckCircle2 size={14} class="shrink-0" />
-          <span>Bestehende Stärken der Website ({parsedAudit.positiveHighlights.length})</span>
-        </div>
-        <div class="flex flex-col gap-1">
-          {#each parsedAudit.positiveHighlights as highlight}
-            <div class="text-xs text-[var(--color-ink-secondary)] flex items-center gap-2">
-              <CheckCircle2 size={12} class="text-[var(--color-accent-emerald)] shrink-0" />
-              <span>{highlight}</span>
-            </div>
-          {/each}
-        </div>
+        <button
+          onclick={() => strengthsOpen = !strengthsOpen}
+          class="w-full p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-emerald-border)] hover:border-[var(--color-accent-emerald)] flex items-center justify-between gap-3 text-left transition-all cursor-pointer active:scale-[0.98]"
+        >
+          <div class="flex items-center gap-2 min-w-0">
+            <CheckCircle2 size={15} class="text-[var(--color-accent-emerald)] shrink-0" />
+            <span class="text-xs font-bold text-[var(--color-accent-emerald)] font-[var(--font-excon)] truncate">
+              Bestehende Stärken der Website
+            </span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-[var(--font-mono)] bg-[var(--color-emerald-tint)] text-[var(--color-accent-emerald)] border border-[var(--color-emerald-border)] shrink-0">
+              {parsedAudit.positiveHighlights.length}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-1.5 text-xs text-[var(--color-ink-muted)] shrink-0">
+            <span>{strengthsOpen ? 'Einklappen' : 'Ausklappen'}</span>
+            <ChevronDown size={14} class="transition-transform duration-200 {strengthsOpen ? 'rotate-180' : ''}" />
+          </div>
+        </button>
+
+        {#if strengthsOpen}
+          <div class="flex flex-col gap-1.5 pl-1 pt-1">
+            {#each parsedAudit.positiveHighlights as highlight}
+              <div class="text-xs text-[var(--color-ink-secondary)] bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] p-2 rounded-[var(--radius-sm)] flex items-center gap-2">
+                <CheckCircle2 size={13} class="text-[var(--color-accent-emerald)] shrink-0" />
+                <span>{highlight}</span>
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
     {/if}
 
-    <!-- MEASURED INFRASTRUCTURE MATRIX -->
+    <!-- MEASURED INFRASTRUCTURE MATRIX (UNIFIED CARD DESIGN) -->
     {#if parsedAudit.stats}
       {@const bookingBadge = getBookingBadge(parsedAudit.stats)}
-      <div class="flex flex-col gap-2 border-t border-[var(--color-border-subtle)] pt-4">
-        <span class="text-xs font-bold text-[var(--color-ink-muted)] font-[var(--font-excon)]">
+      <div class="flex flex-col gap-2.5 border-t border-[var(--color-border-subtle)] pt-4">
+        <span class="text-xs font-bold text-[var(--color-ink-muted)] font-[var(--font-excon)] uppercase tracking-wider">
           Technische Infrastruktur & WaaS-Kennzahlen
         </span>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
           
-          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
-            <span class="text-[10px] text-[var(--color-ink-muted)]">CMS / SYSTEM</span>
-            <span class="font-bold text-[var(--color-ink-primary)] truncate" title={parsedAudit.stats.cmsName}>{parsedAudit.stats.cmsName || 'Eigenentwicklung'}</span>
+          <!-- CMS -->
+          <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col justify-between gap-1 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider">CMS / SYSTEM</span>
+            <span class="text-xs font-bold text-[var(--color-ink-primary)] truncate" title={parsedAudit.stats.cmsName}>{parsedAudit.stats.cmsName || 'Eigenentwicklung'}</span>
           </div>
 
-          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
-            <span class="text-[10px] text-[var(--color-ink-muted)]">COPYRIGHT-STAND</span>
-            <span class="font-bold flex items-center gap-1 {parsedAudit.stats.isCopyrightOutdated ? 'text-rose-400' : 'text-[var(--color-accent-emerald)]'}">
-              <Clock size={12} class="shrink-0" />
+          <!-- COPYRIGHT -->
+          <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col justify-between gap-1 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider">COPYRIGHT-STAND</span>
+            <span class="text-xs font-bold flex items-center gap-1.5 {parsedAudit.stats.isCopyrightOutdated ? 'text-rose-400' : 'text-[var(--color-accent-emerald)]'}">
+              <Clock size={13} class="shrink-0" />
               <span>{parsedAudit.stats.copyrightYear ? `© ${parsedAudit.stats.copyrightYear}` : 'Nicht angegeben'}</span>
             </span>
           </div>
 
-          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
-            <span class="text-[10px] text-[var(--color-ink-muted)]">KONTAKT & BUCHUNG</span>
-            <span class="font-bold flex items-center gap-1 truncate px-1.5 py-0.5 rounded text-[11px] border {bookingBadge.colorClass}">
+          <!-- BOOKING -->
+          <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col justify-between gap-1 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider">KONTAKT & BUCHUNG</span>
+            <span class="text-xs font-bold flex items-center gap-1.5 truncate px-1.5 py-0.5 rounded text-[11px] border {bookingBadge.colorClass}">
               {#if bookingBadge.icon === 'check'}
                 <CalendarCheck size={12} class="shrink-0" />
               {:else if bookingBadge.icon === 'mail'}
@@ -343,9 +451,10 @@
             </span>
           </div>
 
-          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
-            <span class="text-[10px] text-[var(--color-ink-muted)]">DSGVO BANNER & FONTS</span>
-            <span class="font-bold flex items-center gap-1 truncate text-[11px] {parsedAudit.stats.hasGoogleFontsExternal && !parsedAudit.stats.hasCookieBanner ? 'text-amber-400' : 'text-[var(--color-ink-primary)]'}">
+          <!-- DSGVO -->
+          <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col justify-between gap-1 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider">DSGVO BANNER & FONTS</span>
+            <span class="text-xs font-bold flex items-center gap-1.5 truncate text-[11px] {parsedAudit.stats.hasGoogleFontsExternal && !parsedAudit.stats.hasCookieBanner ? 'text-amber-400' : 'text-[var(--color-ink-primary)]'}">
               <Lock size={12} class="shrink-0" />
               <span class="truncate">
                 {#if parsedAudit.stats.hasGoogleFontsExternal && !parsedAudit.stats.hasCookieBanner}
@@ -359,17 +468,19 @@
             </span>
           </div>
 
-          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
-            <span class="text-[10px] text-[var(--color-ink-muted)]">LOCAL SEO (SCHEMA.ORG)</span>
-            <span class="font-bold flex items-center gap-1 {parsedAudit.stats.hasSchemaOrg ? 'text-[var(--color-accent-emerald)]' : 'text-amber-400'}">
+          <!-- LOCAL SEO -->
+          <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col justify-between gap-1 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider">LOCAL SEO (SCHEMA.ORG)</span>
+            <span class="text-xs font-bold flex items-center gap-1.5 {parsedAudit.stats.hasSchemaOrg ? 'text-[var(--color-accent-emerald)]' : 'text-amber-400'}">
               <MapPin size={12} class="shrink-0" />
               <span>{parsedAudit.stats.hasSchemaOrg ? 'Schema.org aktiv' : 'Fehlt'}</span>
             </span>
           </div>
 
-          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
-            <span class="text-[10px] text-[var(--color-ink-muted)]">SEITENGRÖSSE</span>
-            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.stats.pageWeightKb || 0} KB</span>
+          <!-- WEIGHT -->
+          <div class="p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col justify-between gap-1 shadow-sm transition-all hover:border-[var(--color-border-focus)]">
+            <span class="text-[10px] text-[var(--color-ink-muted)] font-[var(--font-excon)] font-bold uppercase tracking-wider">SEITENGRÖSSE</span>
+            <span class="text-xs font-bold font-[var(--font-mono)] text-[var(--color-ink-primary)]">{parsedAudit.stats.pageWeightKb || 0} KB</span>
           </div>
 
         </div>
