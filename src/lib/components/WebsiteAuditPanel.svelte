@@ -8,7 +8,7 @@
   import Code from 'lucide-svelte/icons/code';
   import AlertTriangle from 'lucide-svelte/icons/alert-triangle';
   import CheckCircle2 from 'lucide-svelte/icons/check-circle-2';
-  import Sparkles from 'lucide-svelte/icons/sparkles';
+  import XCircle from 'lucide-svelte/icons/x-circle';
   import PhoneCall from 'lucide-svelte/icons/phone-call';
 
   let { auditData, auditScore = null } = $props<{
@@ -28,55 +28,56 @@
 
   let score = $derived(parsedAudit?.overallScore ?? auditScore ?? 0);
 
-  function getScoreColor(val: number) {
-    if (val >= 80) return 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10';
-    if (val >= 50) return 'text-amber-400 border-amber-500/30 bg-amber-500/10';
-    return 'text-rose-400 border-rose-500/30 bg-rose-500/10';
+  function getScoreBadgeClass(val: number) {
+    if (val >= 80) return 'text-[var(--color-accent-emerald)] border-[var(--color-emerald-border)] bg-[var(--color-emerald-tint)]';
+    if (val >= 50) return 'text-[var(--color-status-amber)] border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.12)]';
+    return 'text-[var(--color-status-rose)] border-[rgba(244,63,94,0.3)] bg-[rgba(244,63,94,0.12)]';
   }
 
   function getBarColorClass(val: number) {
-    if (val >= 80) return 'bg-emerald-500';
-    if (val >= 50) return 'bg-amber-500';
-    return 'bg-rose-500';
+    if (val >= 80) return 'bg-[var(--color-accent-emerald)]';
+    if (val >= 50) return 'bg-[var(--color-status-amber)]';
+    return 'bg-[var(--color-status-rose)]';
   }
 </script>
 
 {#if !parsedAudit}
-  <div class="bg-neutral-900/40 border border-neutral-800/80 rounded-2xl p-5 text-xs text-neutral-400 flex items-center justify-between gap-3">
-    <div class="flex items-center gap-2">
-      <AlertTriangle size={16} class="text-neutral-500" />
-      <span>Kein Website-Audit verfügbar (noch nicht gescrapt oder keine Website vorhanden).</span>
-    </div>
+  <div class="bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] p-5 text-xs text-[var(--color-ink-muted)] flex items-center gap-3">
+    <AlertTriangle size={16} class="text-[var(--color-ink-muted)] shrink-0" />
+    <span>Kein Website-Audit verfügbar (noch nicht analysiert oder keine Homepage erfasst).</span>
   </div>
 {:else}
-  <div class="bg-neutral-900/70 border border-neutral-800/90 rounded-2xl p-5 md:p-6 flex flex-col gap-6 backdrop-blur-xl shadow-xl">
+  <div class="bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] p-5 flex flex-col gap-5 shadow-sm">
     
-    <!-- TOP HEADER WITH SCORE GAUGE & OVERVIEW -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800/80 pb-4">
-      <div class="flex items-center gap-3">
-        <div class="w-14 h-14 rounded-2xl border flex flex-col items-center justify-center font-[var(--font-excon)] font-extrabold shadow-lg shrink-0 {getScoreColor(score)}">
-          <span class="text-xl leading-none">{score}</span>
-          <span class="text-[9px] uppercase tracking-wider opacity-80 mt-0.5">/ 100</span>
+    <!-- HEADER: SCORE GAUGE & AUDIT STATUS -->
+    <div class="flex items-center justify-between gap-4 border-b border-[var(--color-border-subtle)] pb-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-[var(--radius-md)] border flex flex-col items-center justify-center font-bold shrink-0 {getScoreBadgeClass(score)}">
+          <span class="text-lg leading-none font-[var(--font-excon)]">{score}</span>
+          <span class="text-[9px] opacity-70 mt-0.5">/ 100</span>
         </div>
-        <div>
-          <h3 class="text-sm font-[var(--font-excon)] font-bold text-white tracking-tight flex items-center gap-2">
-            <span>Website Health & Conversion Audit</span>
+
+        <div class="flex flex-col gap-0.5">
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-bold text-[var(--color-ink-primary)] font-[var(--font-excon)]">
+              Website Health & Conversion Audit
+            </h3>
             {#if score < 50}
-              <span class="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono font-bold">
-                🔥 High Potential Lead
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                High Potential Lead
               </span>
             {:else if score < 80}
-              <span class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono font-bold">
-                ⚠️ Ausbaufähig
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                Ausbaufähig
               </span>
             {:else}
-              <span class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono font-bold">
-                ✓ Gut optimiert
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                Gut optimiert
               </span>
             {/if}
-          </h3>
-          <p class="text-[11px] text-neutral-400 mt-0.5">
-            Automatische Deep-Analyse von Buchungssystemen, Technik, SEO & Mobile-Readiness.
+          </div>
+          <p class="text-xs text-[var(--color-ink-muted)]">
+            Automatische Analyse von Buchungssystemen, Mobil-Readiness, SEO & Sicherheit.
           </p>
         </div>
       </div>
@@ -84,82 +85,88 @@
 
     <!-- 6 SUB-CATEGORY SCORE BARS -->
     {#if parsedAudit.scores}
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
         
         <!-- Mobile & UX -->
-        <div class="p-2.5 rounded-xl bg-neutral-950/60 border border-neutral-800/80 flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-neutral-400 font-semibold flex items-center gap-1">
-              <Smartphone size={12} class="text-emerald-400" /> Mobil & UX
+        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
+              <Smartphone size={13} class="text-[var(--color-accent-emerald)]" />
+              Mobil & UX
             </span>
-            <span class="font-mono font-bold text-white">{parsedAudit.scores.mobileUX}%</span>
+            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.mobileUX}%</span>
           </div>
-          <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
             <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.mobileUX)}" style="width: {parsedAudit.scores.mobileUX}%"></div>
           </div>
         </div>
 
-        <!-- Security & HTTPS -->
-        <div class="p-2.5 rounded-xl bg-neutral-950/60 border border-neutral-800/80 flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-neutral-400 font-semibold flex items-center gap-1">
-              <ShieldCheck size={12} class="text-emerald-400" /> Sicherheit
+        <!-- Security -->
+        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
+              <ShieldCheck size={13} class="text-[var(--color-accent-emerald)]" />
+              Sicherheit
             </span>
-            <span class="font-mono font-bold text-white">{parsedAudit.scores.security}%</span>
+            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.security}%</span>
           </div>
-          <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
             <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.security)}" style="width: {parsedAudit.scores.security}%"></div>
           </div>
         </div>
 
-        <!-- Conversion & Lead-Gen -->
-        <div class="p-2.5 rounded-xl bg-neutral-950/60 border border-neutral-800/80 flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-neutral-400 font-semibold flex items-center gap-1">
-              <Target size={12} class="text-emerald-400" /> Conversion
+        <!-- Conversion -->
+        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
+              <Target size={13} class="text-[var(--color-accent-emerald)]" />
+              Conversion
             </span>
-            <span class="font-mono font-bold text-white">{parsedAudit.scores.conversion}%</span>
+            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.conversion}%</span>
           </div>
-          <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
             <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.conversion)}" style="width: {parsedAudit.scores.conversion}%"></div>
           </div>
         </div>
 
         <!-- SEO -->
-        <div class="p-2.5 rounded-xl bg-neutral-950/60 border border-neutral-800/80 flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-neutral-400 font-semibold flex items-center gap-1">
-              <Search size={12} class="text-emerald-400" /> SEO
+        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
+              <Search size={13} class="text-[var(--color-accent-emerald)]" />
+              SEO
             </span>
-            <span class="font-mono font-bold text-white">{parsedAudit.scores.seo}%</span>
+            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.seo}%</span>
           </div>
-          <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
             <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.seo)}" style="width: {parsedAudit.scores.seo}%"></div>
           </div>
         </div>
 
-        <!-- Performance -->
-        <div class="p-2.5 rounded-xl bg-neutral-950/60 border border-neutral-800/80 flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-neutral-400 font-semibold flex items-center gap-1">
-              <Zap size={12} class="text-emerald-400" /> Speed
+        <!-- Speed -->
+        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
+              <Zap size={13} class="text-[var(--color-accent-emerald)]" />
+              Speed
             </span>
-            <span class="font-mono font-bold text-white">{parsedAudit.scores.performance}%</span>
+            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.performance}%</span>
           </div>
-          <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
             <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.performance)}" style="width: {parsedAudit.scores.performance}%"></div>
           </div>
         </div>
 
-        <!-- Tech Modernity -->
-        <div class="p-2.5 rounded-xl bg-neutral-950/60 border border-neutral-800/80 flex flex-col gap-1.5">
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-neutral-400 font-semibold flex items-center gap-1">
-              <Code size={12} class="text-emerald-400" /> Tech Stack
+        <!-- Tech Stack -->
+        <div class="p-2.5 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[var(--color-ink-secondary)] font-medium flex items-center gap-1.5">
+              <Code size={13} class="text-[var(--color-accent-emerald)]" />
+              Tech Stack
             </span>
-            <span class="font-mono font-bold text-white">{parsedAudit.scores.techModernity}%</span>
+            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.scores.techModernity}%</span>
           </div>
-          <div class="w-full bg-neutral-900 h-1.5 rounded-full overflow-hidden">
+          <div class="w-full bg-[var(--color-surface-lift)] h-1.5 rounded-full overflow-hidden">
             <div class="h-full rounded-full {getBarColorClass(parsedAudit.scores.techModernity)}" style="width: {parsedAudit.scores.techModernity}%"></div>
           </div>
         </div>
@@ -169,15 +176,15 @@
 
     <!-- COLD CALL TALKING POINTS / PITCH ARGUMENTS -->
     {#if parsedAudit.pitchPoints && parsedAudit.pitchPoints.length > 0}
-      <div class="bg-gradient-to-r from-amber-500/10 to-emerald-500/10 border border-amber-500/30 rounded-xl p-4 flex flex-col gap-2">
-        <span class="text-xs font-[var(--font-excon)] font-bold text-amber-200 flex items-center gap-2">
-          <PhoneCall size={14} class="text-amber-400" />
-          Perfekte Verkaufsargumente für das Telefonat:
-        </span>
-        <ul class="flex flex-col gap-1.5">
+      <div class="bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.25)] rounded-[var(--radius-md)] p-3.5 flex flex-col gap-2">
+        <div class="flex items-center gap-2 text-xs font-bold text-[var(--color-status-amber)] font-[var(--font-excon)]">
+          <PhoneCall size={14} class="shrink-0" />
+          <span>Verkaufsargumente für das Telefonat</span>
+        </div>
+        <ul class="flex flex-col gap-1.5 pl-1">
           {#each parsedAudit.pitchPoints as pitch}
-            <li class="text-[11px] text-neutral-300 flex items-start gap-2">
-              <span class="text-amber-400 font-bold">•</span>
+            <li class="text-xs text-[var(--color-ink-primary)] flex items-start gap-2 leading-relaxed">
+              <span class="text-[var(--color-status-amber)] font-bold font-mono">•</span>
               <span>{pitch}</span>
             </li>
           {/each}
@@ -185,68 +192,86 @@
       </div>
     {/if}
 
-    <!-- EXACT PROBLEMS & DEFICITS -->
+    <!-- CONCRETE PROBLEMS & DEFICITS -->
     {#if parsedAudit.problems && parsedAudit.problems.length > 0}
       <div class="flex flex-col gap-2">
-        <span class="text-xs font-[var(--font-excon)] font-bold text-rose-300 flex items-center gap-1.5">
-          <ShieldAlert size={14} class="text-rose-400" />
-          Konkrete Mängel & Probleme ({parsedAudit.problems.length}):
-        </span>
-        <div class="grid grid-cols-1 gap-1.5">
+        <div class="flex items-center gap-2 text-xs font-bold text-[var(--color-status-rose)] font-[var(--font-excon)]">
+          <ShieldAlert size={14} class="shrink-0" />
+          <span>Erkannte Schwachstellen ({parsedAudit.problems.length})</span>
+        </div>
+        <div class="flex flex-col gap-1.5">
           {#each parsedAudit.problems as problem}
-            <div class="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-[11px] font-mono text-rose-200 flex items-center gap-2">
-              <AlertTriangle size={13} class="text-rose-400 shrink-0" />
-              <span>{problem}</span>
+            <div class="p-2.5 rounded-[var(--radius-sm)] bg-[rgba(244,63,94,0.08)] border border-[rgba(244,63,94,0.2)] text-xs text-[var(--color-status-rose)] flex items-start gap-2">
+              <AlertTriangle size={14} class="shrink-0 mt-0.5" />
+              <span class="leading-normal">{problem}</span>
             </div>
           {/each}
         </div>
       </div>
     {/if}
 
-    <!-- STATS GRID -->
+    <!-- MEASURED INFRASTRUCTURE MATRIX -->
     {#if parsedAudit.stats}
-      <div class="flex flex-col gap-2 border-t border-neutral-800/80 pt-4">
-        <span class="text-[11px] font-[var(--font-excon)] font-bold text-neutral-400 uppercase tracking-wider">
-          Gemessene Kennzahlen & Feature-Matrix:
+      <div class="flex flex-col gap-2 border-t border-[var(--color-border-subtle)] pt-4">
+        <span class="text-xs font-bold text-[var(--color-ink-muted)] font-[var(--font-excon)]">
+          Technische Infrastruktur & Kennzahlen
         </span>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] font-mono">
-          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
-            <span class="text-neutral-500 block text-[9px]">CMS / SYSTEM</span>
-            <span class="font-bold text-white truncate block" title={parsedAudit.stats.cmsName}>{parsedAudit.stats.cmsName || 'Custom'}</span>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
+            <span class="text-[10px] text-[var(--color-ink-muted)]">CMS / SYSTEM</span>
+            <span class="font-bold text-[var(--color-ink-primary)] truncate" title={parsedAudit.stats.cmsName}>{parsedAudit.stats.cmsName || 'Eigenentwicklung'}</span>
           </div>
 
-          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
-            <span class="text-neutral-500 block text-[9px]">HTTPS / SSL CERT</span>
-            <span class="font-bold {parsedAudit.stats.hasHttps ? 'text-emerald-400' : 'text-rose-400'}">
-              {parsedAudit.stats.hasHttps ? '✓ Aktiv (HTTPS)' : '❌ Fehlt (HTTP)'}
+          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
+            <span class="text-[10px] text-[var(--color-ink-muted)]">HTTPS / SSL</span>
+            <span class="font-bold flex items-center gap-1 {parsedAudit.stats.hasHttps ? 'text-[var(--color-accent-emerald)]' : 'text-[var(--color-status-rose)]'}">
+              {#if parsedAudit.stats.hasHttps}
+                <CheckCircle2 size={12} class="shrink-0" />
+                <span>Aktiv</span>
+              {:else}
+                <XCircle size={12} class="shrink-0" />
+                <span>Unverschlüsselt</span>
+              {/if}
             </span>
           </div>
 
-          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
-            <span class="text-neutral-500 block text-[9px]">TERMINBUCHUNG</span>
-            <span class="font-bold {parsedAudit.stats.hasOnlineBooking ? 'text-emerald-400' : 'text-amber-400'} truncate block" title={parsedAudit.stats.bookingProvider}>
-              {parsedAudit.stats.hasOnlineBooking ? `✓ ${parsedAudit.stats.bookingProvider}` : '❌ Keine Buchung'}
+          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
+            <span class="text-[10px] text-[var(--color-ink-muted)]">TERMINBUCHUNG</span>
+            <span class="font-bold flex items-center gap-1 {parsedAudit.stats.hasOnlineBooking ? 'text-[var(--color-accent-emerald)]' : 'text-[var(--color-status-amber)]'} truncate">
+              {#if parsedAudit.stats.hasOnlineBooking}
+                <CheckCircle2 size={12} class="shrink-0" />
+                <span class="truncate">{parsedAudit.stats.bookingProvider || 'Vorhanden'}</span>
+              {:else}
+                <XCircle size={12} class="shrink-0" />
+                <span>Keine Buchung</span>
+              {/if}
             </span>
           </div>
 
-          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
-            <span class="text-neutral-500 block text-[9px]">MOBIL-ANRUF (TEL:)</span>
-            <span class="font-bold {parsedAudit.stats.hasTelLink ? 'text-emerald-400' : 'text-rose-400'}">
-              {parsedAudit.stats.hasTelLink ? '✓ Vorhanden' : '❌ Fehlt'}
+          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
+            <span class="text-[10px] text-[var(--color-ink-muted)]">MOBIL-ANRUF (TEL:)</span>
+            <span class="font-bold flex items-center gap-1 {parsedAudit.stats.hasTelLink ? 'text-[var(--color-accent-emerald)]' : 'text-[var(--color-status-rose)]'}">
+              {#if parsedAudit.stats.hasTelLink}
+                <CheckCircle2 size={12} class="shrink-0" />
+                <span>Vorhanden</span>
+              {:else}
+                <XCircle size={12} class="shrink-0" />
+                <span>Fehlt</span>
+              {/if}
             </span>
           </div>
 
-          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
-            <span class="text-neutral-500 block text-[9px]">DSGVO BANNER</span>
-            <span class="font-bold {parsedAudit.stats.hasCookieBanner ? 'text-emerald-400' : 'text-neutral-400'}">
-              {parsedAudit.stats.hasCookieBanner ? `✓ ${parsedAudit.stats.cookieBannerProvider}` : 'Nicht erkannt'}
+          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
+            <span class="text-[10px] text-[var(--color-ink-muted)]">DSGVO BANNER</span>
+            <span class="font-bold text-[var(--color-ink-primary)] truncate">
+              {parsedAudit.stats.hasCookieBanner ? (parsedAudit.stats.cookieBannerProvider || 'Vorhanden') : 'Nicht erkannt'}
             </span>
           </div>
 
-          <div class="p-2.5 rounded-lg bg-neutral-950/80 border border-neutral-800 text-neutral-300">
-            <span class="text-neutral-500 block text-[9px]">SEITENGRÖSSE & SPEED</span>
-            <span class="font-bold text-white">{parsedAudit.stats.pageWeightKb} KB</span>
+          <div class="p-2.5 rounded-[var(--radius-sm)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex flex-col gap-0.5">
+            <span class="text-[10px] text-[var(--color-ink-muted)]">SEITENGRÖSSE</span>
+            <span class="font-bold text-[var(--color-ink-primary)]">{parsedAudit.stats.pageWeightKb || 0} KB</span>
           </div>
         </div>
       </div>

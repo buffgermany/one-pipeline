@@ -253,8 +253,10 @@ export async function scrapeGoogleMaps(options: ScrapeOptions): Promise<RawGMapL
             const reviewsText = reviewBtn?.textContent || '0';
             const reviews = parseInt(reviewsText.replace(/[^0-9]/g, ''), 10) || 0;
 
-            const heroImg = document.querySelector('button[jsaction*="hero"] img');
-            const featuredImage = heroImg?.getAttribute('src') || '';
+            const heroImg = document.querySelector('button[jsaction*="hero"] img, button[aria-label*="Foto"] img, button[jsaction*="photo"] img, img[src*="googleusercontent"], img[src*="ggpht"]');
+            let rawImg = heroImg?.getAttribute('src') || heroImg?.getAttribute('data-src') || '';
+            if (rawImg.startsWith('//')) rawImg = 'https:' + rawImg;
+            const featuredImage = rawImg;
 
             const ohBtn = document.querySelector('button[data-item-id*="oh"]');
             const openStatus = ohBtn?.getAttribute('aria-label')?.trim() || ohBtn?.textContent?.trim() || '';
