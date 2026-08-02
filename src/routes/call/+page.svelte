@@ -39,6 +39,12 @@
   import Key from 'lucide-svelte/icons/key';
   import Megaphone from 'lucide-svelte/icons/megaphone';
   import Share2 from 'lucide-svelte/icons/share-2';
+  import Info from 'lucide-svelte/icons/info';
+  import Clock from 'lucide-svelte/icons/clock';
+  import Briefcase from 'lucide-svelte/icons/briefcase';
+  import DollarSign from 'lucide-svelte/icons/dollar-sign';
+  import XCircle from 'lucide-svelte/icons/x-circle';
+  import Wrench from 'lucide-svelte/icons/wrench';
   import { page } from '$app/stores';
   import { getGoogleMapsSearchUrl, getGoogleMapsEmbedUrl, getGoogleStreetViewEmbedUrl, normalizeGoogleImageUrl } from '$lib/utils/images';
   import guidelinesData from '$lib/assets/guidelines.json';
@@ -88,12 +94,12 @@
 
   // Human Situational Triggers Mapping (WANN benutze ich was?)
   const situationalGuideTriggers = [
-    { id: 'opener-zero-website', label: 'Keine Website', desc: 'Auf Maps ohne Homepage', icon: '🌐' },
-    { id: 'opener-permissive', label: 'Standard Opener', desc: 'Kalter Einstieg mit Erlaubnis', icon: '🤝' },
-    { id: 'gatekeeper-bypass', label: 'Vorzimmer / Sekräterin', desc: 'Durchstellung zur GF', icon: '🛡️' },
-    { id: 'pattern-interrupt', label: 'Kennt den Spruch', desc: 'Pattern Interrupt / Ehrlich', icon: '⚡' },
-    { id: 'situational-onsite', label: 'Baustelle / Küche', desc: 'Mitten im Betrieb / Lärm', icon: '🚜' },
-    { id: 'qualification-booking', label: 'Termin machen', desc: 'Qualifizierung & Closing', icon: '📅' }
+    { id: 'opener-zero-website', label: 'Keine Website', desc: 'Auf Maps ohne Homepage', iconComponent: Globe },
+    { id: 'opener-permissive', label: 'Standard Opener', desc: 'Kalter Einstieg mit Erlaubnis', iconComponent: PhoneCall },
+    { id: 'gatekeeper-bypass', label: 'Vorzimmer', desc: 'Durchstellung zur GF', iconComponent: UserCheck },
+    { id: 'pattern-interrupt', label: 'Kennt den Spruch', desc: 'Pattern Interrupt / Ehrlich', iconComponent: Zap },
+    { id: 'situational-onsite', label: 'Baustelle / Küche', desc: 'Mitten im Betrieb / Lärm', iconComponent: Wrench },
+    { id: 'qualification-booking', label: 'Termin machen', desc: 'Qualifizierung & Closing', iconComponent: Calendar }
   ];
 
   // Niche Script Profile State & Auto-Detection
@@ -378,12 +384,12 @@
 
   // High-Priority Instant Objection Soundboard (Top 6 Live Triggers)
   const instantObjectionTriggers = [
-    { id: 'no-time', label: 'Keine Zeit', icon: '⏱️', desc: 'Stecke im Tagesgeschäft' },
-    { id: 'have-provider', label: 'Haben Agentur', icon: '🤝', desc: 'Haben schon Website' },
-    { id: 'send-info', label: 'Schicken Sie Mail', icon: '✉️', desc: 'Unterlagen zusenden' },
-    { id: 'too-expensive', label: 'Zu teuer', icon: '💰', desc: 'Kein Budget dafür' },
-    { id: 'no-interest', label: 'Kein Interesse', icon: '🚫', desc: 'Brauchen das nicht' },
-    { id: 'fully-booked', label: 'Ausgebucht', icon: '🌟', desc: 'Haben genug Kunden' }
+    { id: 'no-time', label: 'Keine Zeit', iconComponent: Clock, desc: 'Stecke im Tagesgeschäft' },
+    { id: 'have-provider', label: 'Haben Agentur', iconComponent: Briefcase, desc: 'Haben schon Website' },
+    { id: 'send-info', label: 'Schicken Sie Mail', iconComponent: Mail, desc: 'Unterlagen zusenden' },
+    { id: 'too-expensive', label: 'Zu teuer', iconComponent: DollarSign, desc: 'Kein Budget dafür' },
+    { id: 'no-interest', label: 'Kein Interesse', iconComponent: XCircle, desc: 'Brauchen das nicht' },
+    { id: 'fully-booked', label: 'Ausgebucht', iconComponent: Star, desc: 'Haben genug Kunden' }
   ];
 
   // Dynamic Objections Soundboard loaded directly from guidelines.json
@@ -1230,29 +1236,31 @@
               <span class="text-xs font-mono text-[var(--color-ink-muted)]">({lead?.category || lead?.industry})</span>
 
               {#if lead?.isAd}
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                  📢 Sponsored Ad
+                <span class="px-2 py-0.5 rounded text-xs font-medium bg-purple-500/15 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                  <Megaphone size={11} class="shrink-0 text-purple-300" />
+                  <span>Sponsored Ad</span>
                 </span>
               {/if}
 
               {#if lead?.isClaimed === false}
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30" title="Profil auf Google Maps nicht beansprucht">
-                  🔑 GMB Unclaimed Opportunity
+                <span class="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1" title="Profil auf Google Maps nicht beansprucht">
+                  <Key size={11} class="shrink-0 text-amber-300" />
+                  <span>Unclaimed Profile</span>
                 </span>
               {/if}
             </div>
 
-            <div class="flex items-center gap-2.5 text-xs font-mono font-bold text-[var(--color-ink-primary)]">
+            <div class="flex items-center gap-2.5 text-xs font-medium text-[var(--color-ink-primary)]">
               <span class="flex items-center gap-1 text-[var(--color-ink-secondary)]">
-                <MapPin size={12} class="text-[var(--color-accent-emerald)]" />
+                <MapPin size={12} class="text-[var(--color-accent-emerald)] shrink-0" />
                 {lead?.address || 'Deutschland'}
               </span>
-              <span>•</span>
+              <span class="text-[var(--color-border-subtle)]">|</span>
               <span class="flex items-center gap-1 text-yellow-400">
-                <Star size={12} class="fill-yellow-400" /> {lead?.rating || '4.8'} ({lead?.reviews || 0})
+                <Star size={12} class="fill-yellow-400 shrink-0" /> {lead?.rating || '4.8'} ({lead?.reviews || 0})
               </span>
               {#if lead?.priceLevel}
-                <span>•</span>
+                <span class="text-[var(--color-border-subtle)]">|</span>
                 <span class="text-[var(--color-accent-emerald)]">{lead.priceLevel}</span>
               {/if}
             </div>
@@ -1263,8 +1271,8 @@
             
             <!-- Col 1: Inhaber / Ansprechpartner -->
             <div class="bg-[var(--color-page-void)] p-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] flex flex-col gap-1 min-w-0">
-              <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-accent-emerald)] flex items-center gap-1">
-                <UserCheck size={12} />
+              <span class="text-xs font-bold font-[var(--font-excon)] text-[var(--color-accent-emerald)] flex items-center gap-1">
+                <UserCheck size={12} class="shrink-0" />
                 Inhaber & Ansprechpartner
               </span>
 
@@ -1279,41 +1287,41 @@
                   {/if}
                 </div>
               {:else}
-                <span class="text-[11px] text-[var(--color-ink-muted)] italic mt-0.5">Kein Inhaber auf Impressum erfasst</span>
+                <span class="text-xs text-[var(--color-ink-muted)] italic mt-0.5">Kein Inhaber auf Impressum erfasst</span>
               {/if}
             </div>
 
             <!-- Col 2: Tech Stack & CMS Pill Badges -->
             <div class="bg-[var(--color-page-void)] p-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] flex flex-col gap-1 min-w-0">
-              <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-accent-emerald)] flex items-center gap-1">
-                <Code size={12} />
+              <span class="text-xs font-bold font-[var(--font-excon)] text-[var(--color-accent-emerald)] flex items-center gap-1">
+                <Code size={12} class="shrink-0" />
                 CMS & Tech Stack
               </span>
 
               {#if lead?.techStack}
                 <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
                   {#each parseTechStack(lead.techStack) as tech}
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[var(--color-surface-panel)] text-[var(--color-ink-primary)] border border-[var(--color-border-focus)] shadow-sm">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-surface-panel)] text-[var(--color-ink-primary)] border border-[var(--color-border-subtle)]">
                       <span>{tech}</span>
                     </span>
                   {/each}
                 </div>
               {:else}
-                <span class="text-[11px] text-[var(--color-ink-muted)] italic mt-0.5">Keine CMS Signaturen erkannt</span>
+                <span class="text-xs text-[var(--color-ink-muted)] italic mt-0.5">Keine CMS Signaturen erkannt</span>
               {/if}
             </div>
 
             <!-- Col 3: Direktdurchwahlen & E-Mails (Click-to-Copy) -->
-            <div class="bg-[var(--color-page-void)] p-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] flex flex-col gap-1 font-mono text-[11px] min-w-0">
-              <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-accent-emerald)] flex items-center gap-1 font-sans">
-                <Phone size={12} />
+            <div class="bg-[var(--color-page-void)] p-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] flex flex-col gap-1 text-xs min-w-0">
+              <span class="text-xs font-bold font-[var(--font-excon)] text-[var(--color-accent-emerald)] flex items-center gap-1">
+                <Phone size={12} class="shrink-0" />
                 Direkt-Kontakte
               </span>
 
               <div class="flex flex-col gap-1 mt-0.5">
                 <!-- Google Maps Zentrale -->
                 <div class="flex items-center justify-between gap-1">
-                  <span class="text-[var(--color-ink-secondary)] text-[10px]">Zentrale:</span>
+                  <span class="text-[var(--color-ink-secondary)] text-xs">Zentrale:</span>
                   <button 
                     onclick={() => copyToClipboard(lead?.phoneNumber, 'gmaps_phone_copy')}
                     class="font-bold text-[var(--color-ink-primary)] hover:text-[var(--color-accent-emerald)] flex items-center gap-1 cursor-pointer"
@@ -1327,7 +1335,7 @@
                 <!-- Impressum Direktwahl -->
                 {#if lead?.directPhone || lead?.websitePhone}
                   <div class="flex items-center justify-between gap-1 bg-[var(--color-emerald-tint)] px-1.5 py-0.5 rounded border border-[var(--color-accent-emerald)]/30 text-[var(--color-accent-emerald)] font-bold">
-                    <span class="text-[10px]">Direkt:</span>
+                    <span class="text-xs">Direkt:</span>
                     <button 
                       onclick={() => copyToClipboard(lead?.directPhone || lead?.websitePhone, 'direct_phone_copy')}
                       class="hover:underline flex items-center gap-1 cursor-pointer truncate"
@@ -1343,7 +1351,7 @@
                 {#if lead?.directEmail || lead?.email}
                   {@const emails = Array.from(new Set([...(lead?.directEmail?.split(/[,\s;]+/) || []), ...(lead?.email?.split(/[,\s;]+/) || [])])).filter(Boolean)}
                   <div class="flex items-start justify-between gap-1 pt-0.5 border-t border-[var(--color-border-subtle)]">
-                    <span class="text-[10px] text-[var(--color-ink-muted)]">Mail:</span>
+                    <span class="text-xs text-[var(--color-ink-muted)]">Mail:</span>
                     <div class="flex flex-col text-right truncate">
                       {#each emails as singleEmail}
                         <a href={`mailto:${singleEmail}`} class="text-[var(--color-accent-emerald)] hover:underline truncate max-w-[140px]">
@@ -1360,31 +1368,31 @@
 
         </div>
         
-        <!-- SITUATIONAL QUICK TRIGGER TILES (1-Click Switcher based on "In welcher Situation bin ich gerade?") -->
-        <div class="bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-md)] p-2 flex flex-col gap-1.5 shrink-0 shadow-sm">
+        <!-- SITUATIONAL QUICK TRIGGER TILES (1-Click Switcher) -->
+        <div class="bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-md)] p-2.5 flex flex-col gap-2 shrink-0 shadow-sm">
           
           <div class="flex items-center justify-between">
-            <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-ink-muted)] flex items-center gap-1">
-              <Zap size={11} class="text-[var(--color-accent-emerald)]" /> Anruf-Situation wählen (1-Klick)
+            <span class="text-xs font-bold font-[var(--font-excon)] text-[var(--color-ink-muted)] flex items-center gap-1.5">
+              <Zap size={13} class="text-[var(--color-accent-emerald)] shrink-0" />
+              <span>Anruf-Situation wählen (1-Klick)</span>
             </span>
-            <span class="text-[10px] font-mono text-[var(--color-accent-emerald)] font-bold">
+            <span class="text-xs font-bold text-[var(--color-accent-emerald)]">
               {selectedGuideData.title}
             </span>
           </div>
 
           <!-- 1-Click Situational Trigger Bar -->
-          <div class="grid grid-cols-3 sm:grid-cols-6 gap-1">
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
             {#each situationalGuideTriggers as trig}
               {@const isSelected = selectedGuideId === trig.id}
+              {@const IconComp = trig.iconComponent}
               <button
                 onclick={() => { selectedGuideId = trig.id; activeScriptStage = 1; }}
-                class="p-1.5 rounded-[var(--radius-sm)] border text-left flex flex-col gap-0.5 transition-all cursor-pointer truncate active:scale-95 {isSelected ? 'bg-[var(--color-accent-emerald)] text-[#052E16] border-[var(--color-accent-emerald)] shadow-sm' : 'bg-[var(--color-page-void)] border-[var(--color-border-subtle)] text-[var(--color-ink-secondary)] hover:text-white hover:border-[var(--color-border-focus)]'}"
+                class="p-2 rounded-[var(--radius-sm)] border text-left flex items-center gap-1.5 transition-all cursor-pointer truncate active:scale-[0.98] {isSelected ? 'bg-[var(--color-accent-emerald)] text-[#052E16] border-[var(--color-accent-emerald)] font-bold shadow-sm' : 'bg-[var(--color-page-void)] border-[var(--color-border-subtle)] text-[var(--color-ink-secondary)] hover:text-white hover:border-[var(--color-border-focus)]'}"
                 title={trig.desc}
               >
-                <div class="flex items-center gap-1 text-[11px] font-[var(--font-excon)] font-bold truncate">
-                  <span>{trig.icon}</span>
-                  <span class="truncate">{trig.label}</span>
-                </div>
+                <IconComp size={13} class="shrink-0" />
+                <span class="text-xs font-medium truncate">{trig.label}</span>
               </button>
             {/each}
           </div>
@@ -1404,13 +1412,13 @@
           {/each}
         </div>
 
-        <!-- MAIN TELEPROMPTER CARD (Massive typography & maximum breathing room!) -->
-        <div class="flex-1 bg-[var(--color-surface-panel)] border border-[var(--color-border-focus)] rounded-[var(--radius-lg)] p-5 md:p-6 flex flex-col justify-between gap-4 shadow-xl overflow-hidden relative">
+        <!-- MAIN TELEPROMPTER CARD -->
+        <div class="flex-1 bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] p-5 md:p-6 flex flex-col justify-between gap-4 shadow-xl overflow-hidden relative">
           
           <div class="flex items-center justify-between border-b border-[var(--color-border-subtle)] pb-2.5">
             <div class="flex items-center gap-2 truncate">
-              <span class="w-2.5 h-2.5 rounded-full bg-[var(--color-accent-emerald)] animate-pulse shrink-0"></span>
-              <span class="text-xs font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-accent-emerald)] truncate">
+              <span class="w-2 h-2 rounded-full bg-[var(--color-accent-emerald)] shrink-0"></span>
+              <span class="text-xs font-[var(--font-excon)] font-bold text-[var(--color-accent-emerald)] truncate">
                 {currentStageData.title}
               </span>
             </div>
@@ -1438,19 +1446,20 @@
 
           <!-- Ultra-readable Teleprompter Text -->
           <div class="flex-1 flex flex-col items-center justify-center p-3 text-center gap-5 my-auto">
-            <p class="text-2xl md:text-3xl text-[var(--color-ink-primary)] font-light leading-relaxed tracking-wide max-w-2xl">
+            <p class="text-2xl md:text-3xl text-[var(--color-ink-primary)] font-light leading-relaxed max-w-2xl">
               {@html currentStageData.wording
-                .replace(/\*\*(.*?)\*\*/g, '<mark class="bg-[rgba(16,185,129,0.18)] text-[var(--color-accent-emerald)] px-2.5 py-0.5 rounded font-bold">$1</mark>')
+                .replace(/\*\*(.*?)\*\*/g, '<span class="text-[var(--color-accent-emerald)] font-semibold">$1</span>')
                 .replace(/\*(.*?)\*/g, '<em class="italic text-[var(--color-status-amber)] font-medium">$1</em>')}
             </p>
 
-            <div class="p-2.5 rounded-[var(--radius-md)] bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.25)] text-xs text-[var(--color-status-amber)] max-w-xl font-medium">
-              💡 {currentStageData.tip}
+            <div class="p-2.5 rounded-[var(--radius-md)] bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.25)] text-xs text-[var(--color-status-amber)] max-w-xl font-medium flex items-center gap-2">
+              <Info size={14} class="shrink-0 text-[var(--color-status-amber)]" />
+              <span>{currentStageData.tip}</span>
             </div>
           </div>
 
-          <div class="flex items-center justify-between pt-2.5 border-t border-[var(--color-border-subtle)] text-xs text-[var(--color-ink-muted)] font-mono">
-            <span>Drücke <kbd class="bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] px-1.5 py-0.5 rounded text-[var(--color-ink-primary)]">Tab</kbd> für nächsten Schritt</span>
+          <div class="flex items-center justify-between pt-2.5 border-t border-[var(--color-border-subtle)] text-xs text-[var(--color-ink-muted)]">
+            <span>Drücke <kbd class="bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] px-1.5 py-0.5 rounded text-[var(--color-ink-primary)] font-mono">Tab</kbd> für nächsten Schritt</span>
             <button 
               onclick={() => activeScriptStage = Math.min(currentGuideStages.length, activeScriptStage + 1)}
               class="px-3 py-1 rounded bg-[var(--color-page-void)] hover:bg-[var(--color-surface-lift)] text-[var(--color-accent-emerald)] font-[var(--font-excon)] font-bold flex items-center gap-1 cursor-pointer"
@@ -1465,11 +1474,12 @@
         <!-- CLEAN IN-CALL NOTES DOCK -->
         <div class="bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-md)] p-2.5 flex flex-col gap-1.5 shrink-0">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-ink-muted)] flex items-center gap-1">
-              <FileText size={12} /> Live Anruf-Notiz
+            <span class="text-xs font-bold font-[var(--font-excon)] text-[var(--color-ink-muted)] flex items-center gap-1">
+              <FileText size={12} class="shrink-0 text-[var(--color-accent-emerald)]" />
+              <span>Live Anruf-Notiz</span>
             </span>
-            <span class="text-[10px] text-[var(--color-ink-muted)] font-mono">
-              Wird bei Disposition im Header automatisch in DB gespeichert
+            <span class="text-xs text-[var(--color-ink-muted)]">
+              Wird bei Disposition im Header gespeichert
             </span>
           </div>
 
@@ -1526,22 +1536,22 @@
             
             <!-- 1-CLICK HIGH-PRIORITY LIVE OBJECTION SOUNDBOARD TILES -->
             <div class="flex flex-col gap-1.5 shrink-0 bg-[var(--color-page-void)] p-2 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)]">
-              <span class="text-[10px] font-[var(--font-excon)] font-bold uppercase tracking-wider text-[var(--color-ink-muted)] flex items-center gap-1">
-                ⚡ Einwand wählen (1-Klick)
+              <span class="text-xs font-bold font-[var(--font-excon)] text-[var(--color-ink-muted)] flex items-center gap-1">
+                <Zap size={13} class="text-[var(--color-accent-emerald)] shrink-0" />
+                <span>Einwand wählen (1-Klick)</span>
               </span>
 
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-1">
                 {#each instantObjectionTriggers as trig}
                   {@const isSelected = selectedObjectionId === trig.id}
+                  {@const ObjIcon = trig.iconComponent}
                   <button
                     onclick={() => { selectedObjectionId = trig.id; selectedResponseIndex = 0; }}
-                    class="p-1.5 rounded-[var(--radius-sm)] border text-left flex flex-col gap-0.5 transition-all cursor-pointer truncate active:scale-95 {isSelected ? 'bg-[var(--color-accent-emerald)] text-[#052E16] border-[var(--color-accent-emerald)] shadow-sm' : 'bg-[var(--color-surface-panel)] border-[var(--color-border-subtle)] text-[var(--color-ink-secondary)] hover:text-white hover:border-[var(--color-border-focus)]'}"
+                    class="p-2 rounded-[var(--radius-sm)] border text-left flex items-center gap-1.5 transition-all cursor-pointer truncate active:scale-[0.98] {isSelected ? 'bg-[var(--color-accent-emerald)] text-[#052E16] border-[var(--color-accent-emerald)] font-bold shadow-sm' : 'bg-[var(--color-surface-panel)] border-[var(--color-border-subtle)] text-[var(--color-ink-secondary)] hover:text-white hover:border-[var(--color-border-focus)]'}"
                     title={trig.desc}
                   >
-                    <div class="flex items-center gap-1 text-[11px] font-[var(--font-excon)] font-bold truncate">
-                      <span>{trig.icon}</span>
-                      <span class="truncate">{trig.label}</span>
-                    </div>
+                    <ObjIcon size={12} class="shrink-0" />
+                    <span class="text-xs font-medium truncate">{trig.label}</span>
                   </button>
                 {/each}
               </div>
@@ -1553,17 +1563,17 @@
               <div class="flex flex-col gap-2.5">
                 <div class="flex items-center justify-between border-b border-[var(--color-border-subtle)] pb-2">
                   <div class="flex flex-col min-w-0">
-                    <span class="text-xs font-[var(--font-excon)] font-bold text-[var(--color-accent-emerald)] uppercase truncate">
+                    <span class="text-xs font-[var(--font-excon)] font-bold text-[var(--color-accent-emerald)] truncate">
                       {selectedObjection.category}
                     </span>
-                    <span class="text-[10px] font-mono text-[var(--color-ink-muted)] truncate">
+                    <span class="text-xs text-[var(--color-ink-muted)] truncate">
                       Trigger: "{selectedObjection.trigger}"
                     </span>
                   </div>
                   
                   <button 
                     onclick={() => copyToClipboard(`${currentObjectionResponse.airbag} ${currentObjectionResponse.reframing} ${currentObjectionResponse.cta}`, 'counter_main')}
-                    class="text-[11px] text-[var(--color-ink-muted)] hover:text-white flex items-center gap-1 cursor-pointer shrink-0 ml-2"
+                    class="text-xs text-[var(--color-ink-muted)] hover:text-white flex items-center gap-1 cursor-pointer shrink-0 ml-2"
                   >
                     {#if copiedSnippetId === 'counter_main'}
                       <Check size={12} class="text-[var(--color-accent-emerald)]" />
@@ -1582,7 +1592,7 @@
                       {@const isSel = selectedResponseIndex === idx}
                       <button 
                         onclick={() => selectedResponseIndex = idx}
-                        class="px-2 py-0.5 text-[10px] font-[var(--font-excon)] font-bold rounded transition-all text-center cursor-pointer shrink-0 {isSel ? 'bg-[var(--color-accent-emerald)] text-[#052E16]' : 'text-[var(--color-ink-muted)] hover:text-white'}"
+                        class="px-2 py-0.5 text-xs font-[var(--font-excon)] font-bold rounded transition-all text-center cursor-pointer shrink-0 {isSel ? 'bg-[var(--color-accent-emerald)] text-[#052E16]' : 'text-[var(--color-ink-muted)] hover:text-white'}"
                       >
                         Var. {idx + 1}: {resp.variant}
                       </button>
@@ -1594,8 +1604,9 @@
                 <div class="flex flex-col gap-2.5 pt-1">
                   <!-- Airbag (Entschärfen) -->
                   <div class="p-2.5 rounded bg-[rgba(6,182,212,0.1)] border border-[rgba(6,182,212,0.25)] flex flex-col gap-0.5">
-                    <span class="text-[10px] font-bold text-[var(--color-status-cyan)] uppercase tracking-wider flex items-center gap-1">
-                      <ShieldAlert size={11} /> 1. Entschärfen / Airbag
+                    <span class="text-xs font-bold text-[var(--color-status-cyan)] flex items-center gap-1">
+                      <ShieldAlert size={12} class="shrink-0" />
+                      <span>1. Entschärfen / Airbag</span>
                     </span>
                     <p class="text-xs text-[var(--color-ink-primary)] leading-relaxed italic">
                       "{@html resolveLeadPlaceholders(currentObjectionResponse.airbag, lead, true)}"
@@ -1604,8 +1615,9 @@
 
                   <!-- Reframing (Umrahmen) -->
                   <div class="p-2.5 rounded bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.25)] flex flex-col gap-0.5">
-                    <span class="text-[10px] font-bold text-[var(--color-status-amber)] uppercase tracking-wider flex items-center gap-1">
-                      <RefreshCw size={11} /> 2. Perspektivenwechsel / Reframing
+                    <span class="text-xs font-bold text-[var(--color-status-amber)] flex items-center gap-1">
+                      <RefreshCw size={12} class="shrink-0" />
+                      <span>2. Perspektivenwechsel / Reframing</span>
                     </span>
                     <p class="text-xs text-[var(--color-ink-primary)] leading-relaxed font-light">
                       "{@html resolveLeadPlaceholders(currentObjectionResponse.reframing, lead, true)}"
@@ -1614,8 +1626,9 @@
 
                   <!-- CTA (Micro-Commitment) -->
                   <div class="p-2.5 rounded bg-[var(--color-emerald-tint)] border border-[var(--color-emerald-border)] flex flex-col gap-0.5">
-                    <span class="text-[10px] font-bold text-[var(--color-accent-emerald)] uppercase tracking-wider flex items-center gap-1">
-                      <Target size={11} /> 3. Niedrigschwellige CTA-Frage
+                    <span class="text-xs font-bold text-[var(--color-accent-emerald)] flex items-center gap-1">
+                      <Target size={12} class="shrink-0" />
+                      <span>3. Niedrigschwellige CTA-Frage</span>
                     </span>
                     <p class="text-xs text-white font-medium leading-relaxed">
                       "{@html resolveLeadPlaceholders(currentObjectionResponse.cta, lead, true)}"
@@ -1625,13 +1638,11 @@
 
               </div>
 
-              <div class="text-[10px] text-[var(--color-ink-muted)] font-mono flex items-center justify-between border-t border-[var(--color-border-subtle)] pt-2">
+              <div class="text-xs text-[var(--color-ink-muted)] flex items-center justify-between border-t border-[var(--color-border-subtle)] pt-2">
                 <span>Variante: {currentObjectionResponse.variant}</span>
                 <span>Airbag → Reframing → CTA</span>
               </div>
             </div>
-
-
 
           </div>
         {/if}
