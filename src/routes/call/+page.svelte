@@ -51,7 +51,7 @@
 
   // Two-Phase Cockpit Mode
   let callStarted = $state(false);
-  let viewMode = $state<'maps' | 'photo'>('maps');
+  let viewMode = $state<'maps' | 'photo'>('photo');
 
   // Session Skipped Leads History & Targeting Filters
   let skippedLeadIds = $state<string[]>([]);
@@ -921,7 +921,7 @@
                 {/if}
               </div>
 
-              <div class="flex items-center gap-2.5 flex-wrap mt-1">
+              <div class="flex items-center gap-2 flex-wrap mt-1">
                 <a 
                   href={lead?.googleMapsUrl || getGoogleMapsSearchUrl(lead?.name, lead?.address)}
                   target="_blank" 
@@ -932,6 +932,21 @@
                   <span>{lead?.name || 'Unternehmensname'}</span>
                   <ExternalLink size={18} class="text-[var(--color-ink-muted)] group-hover:text-[var(--color-accent-emerald)] transition-colors shrink-0" />
                 </a>
+
+                {#if lead?.website}
+                  {@const webUrl = lead.website.startsWith('http') ? lead.website : 'https://' + lead.website}
+                  <a 
+                    href={webUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[var(--color-emerald-tint)] hover:bg-[var(--color-accent-emerald)] hover:text-[#052E16] text-[var(--color-accent-emerald)] border border-[var(--color-emerald-border)] text-xs font-bold transition-all active:scale-[0.98] cursor-pointer"
+                    title="Website in neuem Tab öffnen"
+                  >
+                    <Globe size={13} class="shrink-0" />
+                    <span>Website öffnen</span>
+                    <ExternalLink size={11} class="shrink-0" />
+                  </a>
+                {/if}
               </div>
 
               <div class="flex items-center gap-2.5 text-xs text-[var(--color-ink-secondary)] flex-wrap mt-0.5">
@@ -1075,11 +1090,22 @@
                   {/if}
 
                   {#if lead?.facebook || lead?.instagram || lead?.linkedin}
-                    <div class="flex items-center gap-2 text-[var(--color-ink-muted)] shrink-0">
-                      <Share2 size={12} />
-                      {#if lead?.linkedin}<a href={lead.linkedin} target="_blank" rel="noreferrer" class="hover:text-[var(--color-ink-primary)]">LinkedIn</a>{/if}
-                      {#if lead?.instagram}<a href={lead.instagram} target="_blank" rel="noreferrer" class="hover:text-[var(--color-ink-primary)]">Instagram</a>{/if}
-                      {#if lead?.facebook}<a href={lead.facebook} target="_blank" rel="noreferrer" class="hover:text-[var(--color-ink-primary)]">Facebook</a>{/if}
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      {#if lead?.linkedin}
+                        <a href={lead.linkedin} target="_blank" rel="noreferrer" class="p-1 rounded bg-[var(--color-page-void)] hover:bg-[var(--color-surface-lift)] text-[var(--color-ink-secondary)] hover:text-[var(--color-accent-emerald)] border border-[var(--color-border-subtle)] transition-all cursor-pointer" title="LinkedIn Profil">
+                          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+                        </a>
+                      {/if}
+                      {#if lead?.instagram}
+                        <a href={lead.instagram} target="_blank" rel="noreferrer" class="p-1 rounded bg-[var(--color-page-void)] hover:bg-[var(--color-surface-lift)] text-[var(--color-ink-secondary)] hover:text-[var(--color-accent-emerald)] border border-[var(--color-border-subtle)] transition-all cursor-pointer" title="Instagram Profil">
+                          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 2.156 4.919 5.406.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 5.234-4.919 5.409-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-2.199-4.919-5.409-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-5.234 4.919-5.409 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </a>
+                      {/if}
+                      {#if lead?.facebook}
+                        <a href={lead.facebook} target="_blank" rel="noreferrer" class="p-1 rounded bg-[var(--color-page-void)] hover:bg-[var(--color-surface-lift)] text-[var(--color-ink-secondary)] hover:text-[var(--color-accent-emerald)] border border-[var(--color-border-subtle)] transition-all cursor-pointer" title="Facebook Profil">
+                          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </a>
+                      {/if}
                     </div>
                   {/if}
                 </div>
@@ -1799,101 +1825,101 @@
   <!-- TARGETING & STRATEGY SELECTION MODAL -->
   {#if showFilterModal}
     <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div class="w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col gap-5 shadow-2xl relative">
+      <div class="w-full max-w-lg bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] p-6 flex flex-col gap-5 shadow-2xl relative">
         
         <!-- Modal Header -->
-        <div class="flex items-center justify-between border-b border-neutral-800 pb-3">
+        <div class="flex items-center justify-between border-b border-[var(--color-border-subtle)] pb-3">
           <div class="flex items-center gap-2">
-            <Target size={18} class="text-emerald-400" />
-            <h3 class="text-sm font-[var(--font-excon)] font-bold text-white uppercase tracking-wider">
+            <Target size={18} class="text-[var(--color-accent-emerald)]" />
+            <h3 class="text-sm font-[var(--font-excon)] font-bold text-[var(--color-ink-primary)]">
               Anruf-Targeting & Akquise-Strategie
             </h3>
           </div>
-          <button onclick={() => showFilterModal = false} class="p-1 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white cursor-pointer">
+          <button onclick={() => showFilterModal = false} class="p-1 rounded bg-[var(--color-page-void)] hover:bg-[var(--color-surface-lift)] text-[var(--color-ink-muted)] hover:text-white cursor-pointer">
             <X size={16} />
           </button>
         </div>
 
         <!-- Filter Controls Grid -->
-        <div class="flex flex-col gap-4 text-xs font-[var(--font-general-sans)]">
+        <div class="flex flex-col gap-4 text-xs">
           
           <!-- 1. Industry / Category Filter -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-[11px] font-[var(--font-excon)] font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Building2 size={13} class="text-emerald-400" />
-              Ziel-Branche / Nische:
+            <label class="text-xs font-bold text-[var(--color-ink-muted)] font-[var(--font-excon)] flex items-center gap-1.5">
+              <Building2 size={13} class="text-[var(--color-accent-emerald)]" />
+              Ziel-Branche / Nische
             </label>
             <select 
               bind:value={filterCategory}
-              class="w-full bg-neutral-950 border border-neutral-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white font-medium focus:outline-none cursor-pointer"
+              class="w-full bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] focus:border-[var(--color-accent-emerald)] rounded-[var(--radius-md)] px-3 py-2 text-xs text-[var(--color-ink-primary)] font-medium focus:outline-none cursor-pointer"
             >
               <option value="all">Alle Branchen (Ungefiltert)</option>
-              <option value="gastro">🍕 Gastro, Bars & Restaurants</option>
-              <option value="handwerk">🛠️ Handwerk, Bau & Sanitär</option>
-              <option value="praxis">🩺 Praxen, Ärzte & Gesundheit</option>
-              <option value="b2b">💼 B2B, Beratung & Dienstleister</option>
+              <option value="gastro">Gastro, Bars & Restaurants</option>
+              <option value="handwerk">Handwerk, Bau & Sanitär</option>
+              <option value="praxis">Praxen, Ärzte & Gesundheit</option>
+              <option value="b2b">B2B, Beratung & Dienstleister</option>
             </select>
           </div>
 
           <!-- 2. Website Audit Score Filter -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-[11px] font-[var(--font-excon)] font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
-              <ShieldAlert size={13} class="text-amber-400" />
-              Website Audit-Qualität:
+            <label class="text-xs font-bold text-[var(--color-ink-muted)] font-[var(--font-excon)] flex items-center gap-1.5">
+              <ShieldAlert size={13} class="text-[var(--color-status-amber)]" />
+              Website Audit-Qualität
             </label>
             <select 
               bind:value={filterAuditScore}
-              class="w-full bg-neutral-950 border border-neutral-800 focus:border-amber-500 rounded-xl px-3 py-2 text-xs text-white font-medium focus:outline-none cursor-pointer"
+              class="w-full bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] focus:border-[var(--color-status-amber)] rounded-[var(--radius-md)] px-3 py-2 text-xs text-[var(--color-ink-primary)] font-medium focus:outline-none cursor-pointer"
             >
               <option value={null}>Alle Webseiten (Ungefiltert)</option>
-              <option value={50}>🔥 Kritische Mängel (Score &lt; 50) — Perfekt für Kaltaquise!</option>
-              <option value={75}>⚠️ Ausbaufähig (Score &lt; 75)</option>
-              <option value={-1}>🌐 Ohne eigene Website (No-Site Leads)</option>
+              <option value={50}>Kritische Mängel (Score &lt; 50) — Perfekt für Kaltakquise</option>
+              <option value={75}>Ausbaufähig (Score &lt; 75)</option>
+              <option value={-1}>Ohne eigene Website (No-Site Leads)</option>
             </select>
           </div>
 
           <!-- 3. Sort & Order Strategy -->
           <div class="flex flex-col gap-1.5">
-            <label class="text-[11px] font-[var(--font-excon)] font-bold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
-              <ArrowUpDown size={13} class="text-cyan-400" />
-              Reihenfolge & Zieh-Strategie:
+            <label class="text-xs font-bold text-[var(--color-ink-muted)] font-[var(--font-excon)] flex items-center gap-1.5">
+              <ArrowUpDown size={13} class="text-[var(--color-status-cyan)]" />
+              Reihenfolge & Zieh-Strategie
             </label>
             <select 
               bind:value={filterSortStrategy}
-              class="w-full bg-neutral-950 border border-neutral-800 focus:border-cyan-500 rounded-xl px-3 py-2 text-xs text-white font-medium focus:outline-none cursor-pointer"
+              class="w-full bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] focus:border-[var(--color-status-cyan)] rounded-[var(--radius-md)] px-3 py-2 text-xs text-[var(--color-ink-primary)] font-medium focus:outline-none cursor-pointer"
             >
-              <option value="priority">🎯 Auto-Priority (Wiedervorlagen zuerst)</option>
-              <option value="random">🎲 Zufällig (Random Mixture)</option>
-              <option value="rating">⭐ Höchste Google-Bewertungen</option>
-              <option value="reviews">💬 Meiste Google-Rezensionen</option>
-              <option value="audit_lowest">🔥 Schlechteste Website-Score zuerst</option>
-              <option value="unclaimed">🔑 Unbeanspruchte Google-Profile zuerst</option>
+              <option value="priority">Auto-Priority (Wiedervorlagen zuerst)</option>
+              <option value="random">Zufällig (Random Mixture)</option>
+              <option value="rating">Höchste Google-Bewertungen</option>
+              <option value="reviews">Meiste Google-Rezensionen</option>
+              <option value="audit_lowest">Schlechteste Website-Score zuerst</option>
+              <option value="unclaimed">Unbeanspruchte Google-Profile zuerst</option>
             </select>
           </div>
 
           <!-- 4. Direct Impressum Phone Only -->
-          <label class="flex items-center justify-between p-3 rounded-xl bg-neutral-950 border border-neutral-800 cursor-pointer">
+          <label class="flex items-center justify-between p-3 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] cursor-pointer">
             <div class="flex items-center gap-2">
-              <PhoneCall size={14} class="text-emerald-400" />
-              <span class="text-xs text-neutral-200 font-semibold">Nur Leads mit Impressum-Direktwahl</span>
+              <PhoneCall size={14} class="text-[var(--color-accent-emerald)]" />
+              <span class="text-xs text-[var(--color-ink-primary)] font-semibold">Nur Leads mit Impressum-Direktwahl</span>
             </div>
-            <input type="checkbox" bind:checked={filterHasDirectPhone} class="rounded text-emerald-500 cursor-pointer" />
+            <input type="checkbox" bind:checked={filterHasDirectPhone} class="rounded text-[var(--color-accent-emerald)] cursor-pointer" />
           </label>
 
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex items-center justify-end gap-3 border-t border-neutral-800 pt-4">
+        <div class="flex items-center justify-end gap-3 border-t border-[var(--color-border-subtle)] pt-4">
           <button 
             onclick={() => showFilterModal = false}
-            class="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs font-bold transition-all cursor-pointer"
+            class="px-4 py-2 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] text-[var(--color-ink-secondary)] hover:text-white text-xs font-bold transition-all cursor-pointer"
           >
             Abbrechen
           </button>
 
           <button 
             onclick={applyFiltersAndPull}
-            class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-[var(--font-excon)] font-bold text-xs transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+            class="px-5 py-2 rounded-[var(--radius-md)] bg-[var(--color-accent-emerald)] hover:bg-[#0EA5E9] text-[#052E16] hover:text-white font-[var(--font-excon)] font-bold text-xs transition-all shadow-md active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
           >
             <Sparkles size={14} />
             <span>Strategie Anwenden & Lead Ziehen</span>
