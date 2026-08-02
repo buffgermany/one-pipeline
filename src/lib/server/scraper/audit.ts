@@ -474,6 +474,66 @@ export function auditLocalSEO(htmlText: string, $: cheerio.CheerioAPI): LocalSEO
 }
 
 /**
+ * Flexible & Bulletproof Copyright Year Extractor
+ * Focuses on footer DOM elements & visible text.
+ * Correctly handles ranges (e.g. "2006-2021" -> 2021), "(C) 2026", "(C) Company 2026", etc.
+ */
+export function extractCopyrightYear($: cheerio.CheerioAPI, htmlText: string): number | undefined {
+  // 1. Target footer elements first, or fallback to bottom body text
+  let targetText = '';
+  const footerEls = $('footer, [class*="footer"], [id*="footer"], [class*="copyright"], [id*="copyright"], [class*="bottom"], [id*="bottom"]');
+
+  if (footerEls.length > 0) {
+    targetText = footerEls.text();
+  }
+
+  if (!targetText || targetText.length < 10) {
+    const fullBodyText = $('body').text() || '';
+    targetText = fullBodyText.length > 1000 ? fullBodyText.slice(-1500) : fullBodyText;
+  }
+
+  const currentYear = new Date().getFullYear();
+  const candidateYears: number[] = [];
+
+  // Match copyright blocks in text
+  const copyrightBlockRegex = /(?:©|&copy;|\(c\)|copyright|alle rechte vorbehalten|all rights reserved)[\s\S]{0,120}?(?=(?:\r?\n\r?\n|<br|<p|$))/gi;
+
+  let match;
+  while ((match = copyrightBlockRegex.exec(targetText)) !== null) {
+    const block = match[0];
+    const yearMatches = block.match(/\b(199\d|20[0-2]\d)\b/g);
+    if (yearMatches) {
+      for (const yStr of yearMatches) {
+        const y = parseInt(yStr, 10);
+        if (y >= 1995 && y <= currentYear + 1) {
+          candidateYears.push(y);
+        }
+      }
+    }
+  }
+
+  // Fallback: If no copyright block was found, search targetText for any 20XX years
+  if (candidateYears.length === 0 && targetText) {
+    const yearMatches = targetText.match(/\b(20[0-2]\d)\b/g);
+    if (yearMatches) {
+      for (const yStr of yearMatches) {
+        const y = parseInt(yStr, 10);
+        if (y >= 1995 && y <= currentYear + 1) {
+          candidateYears.push(y);
+        }
+      }
+    }
+  }
+
+  if (candidateYears.length > 0) {
+    // Return the HIGHEST (most recent) year found in the copyright text!
+    return Math.max(...candidateYears);
+  }
+
+  return undefined;
+}
+
+/**
  * WaaS Maintenance, Freshness & Performance Auditor
  */
 export function auditWaaSMaintenance(htmlText: string, $: cheerio.CheerioAPI): WaaSMaintenanceAudit {
@@ -516,13 +576,8 @@ export function auditWaaSMaintenance(htmlText: string, $: cheerio.CheerioAPI): W
     cmsName = 'Strato Homepage-Baukasten';
   }
 
-  // 2. Copyright Freshness Detection
-  let copyrightYear: number | undefined = undefined;
-  const copyrightMatch = htmlText.match(/(?:©|copyright|&copy;)\s*(?:20\d{2}\s*[-–]\s*)?(20\d{2})/i);
-  if (copyrightMatch && copyrightMatch[1]) {
-    copyrightYear = parseInt(copyrightMatch[1], 10);
-  }
-
+  // 2. Flexible & Bulletproof Copyright Freshness Detection
+  const copyrightYear = extractCopyrightYear($, htmlText);
   const currentYear = new Date().getFullYear();
   const isCopyrightOutdated = Boolean(copyrightYear && copyrightYear < currentYear - 1);
 
