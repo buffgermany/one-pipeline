@@ -932,21 +932,6 @@
                   <span>{lead?.name || 'Unternehmensname'}</span>
                   <ExternalLink size={18} class="text-[var(--color-ink-muted)] group-hover:text-[var(--color-accent-emerald)] transition-colors shrink-0" />
                 </a>
-
-                {#if lead?.website}
-                  {@const webUrl = lead.website.startsWith('http') ? lead.website : 'https://' + lead.website}
-                  <a 
-                    href={webUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[var(--color-emerald-tint)] hover:bg-[var(--color-accent-emerald)] hover:text-[#052E16] text-[var(--color-accent-emerald)] border border-[var(--color-emerald-border)] text-xs font-bold transition-all active:scale-[0.98] cursor-pointer"
-                    title="Website in neuem Tab öffnen"
-                  >
-                    <Globe size={13} class="shrink-0" />
-                    <span>Website öffnen</span>
-                    <ExternalLink size={11} class="shrink-0" />
-                  </a>
-                {/if}
               </div>
 
               <div class="flex items-center gap-2.5 text-xs text-[var(--color-ink-secondary)] flex-wrap mt-0.5">
@@ -966,8 +951,8 @@
               </div>
             </div>
 
-            <!-- RATING & REVIEWS BADGE -->
-            <div class="flex items-center gap-2 shrink-0">
+            <!-- RATING & REVIEWS BADGE + WEBSITE LINK -->
+            <div class="flex flex-col md:items-end gap-2 shrink-0">
               <div class="px-3 py-2 rounded-[var(--radius-md)] bg-[var(--color-page-void)] border border-[var(--color-border-subtle)] flex items-center gap-2 text-xs font-bold">
                 <Star size={14} class="text-yellow-400 fill-yellow-400 shrink-0" />
                 <span class="text-[var(--color-ink-primary)]">{lead?.rating || '4.8'}</span>
@@ -976,6 +961,21 @@
                   <span class="text-[var(--color-accent-emerald)] ml-1">{lead.priceLevel}</span>
                 {/if}
               </div>
+
+              {#if lead?.website}
+                {@const webUrl = lead.website.startsWith('http') ? lead.website : 'https://' + lead.website}
+                <a 
+                  href={webUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--color-emerald-tint)] hover:bg-[var(--color-accent-emerald)] hover:text-[#052E16] text-[var(--color-accent-emerald)] border border-[var(--color-emerald-border)] text-xs font-bold transition-all active:scale-[0.98] cursor-pointer w-full md:w-auto"
+                  title="Website in neuem Tab öffnen"
+                >
+                  <Globe size={13} class="shrink-0" />
+                  <span>Website öffnen</span>
+                  <ExternalLink size={11} class="shrink-0" />
+                </a>
+              {/if}
             </div>
 
           </div>
