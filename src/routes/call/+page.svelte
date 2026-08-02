@@ -898,7 +898,7 @@
   <!-- PRE-CALL BRIEFING MODE -->
   {#if !callStarted}
     <div class="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col items-center">
-      <div class="w-full max-w-6xl flex flex-col gap-4 pb-8 my-auto">
+      <div class="w-full max-w-6xl flex flex-col gap-4 pb-8 pt-2">
         
         <div class="t-skel {!loadingLead ? 'is-revealed' : ''} w-full">
           <!-- SKELETON PLACEHOLDER DURING LEAD FETCH -->

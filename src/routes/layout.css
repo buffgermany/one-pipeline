@@ -222,27 +222,26 @@
 }
 
 /* Skeleton loader & reveal (transitions-dev 14) */
-.t-skel { position: relative; }
-.t-skel-skeleton, .t-skel-content {
-  transition: opacity var(--reveal-dur) var(--reveal-ease), filter var(--reveal-dur) var(--reveal-ease);
+.t-skel {
+  position: relative;
+  width: 100%;
 }
 .t-skel-skeleton {
   opacity: 1;
-  filter: blur(0);
+  transition: opacity var(--reveal-dur) var(--reveal-ease);
 }
 .t-skel-content {
   opacity: 0;
-  filter: blur(var(--reveal-blur));
+  transition: opacity var(--reveal-dur) var(--reveal-ease);
+}
+.t-skel:not(.is-revealed) .t-skel-content {
+  display: none;
 }
 .t-skel.is-revealed .t-skel-skeleton {
-  opacity: 0;
-  filter: blur(var(--reveal-blur));
-  pointer-events: none;
+  display: none;
 }
 .t-skel.is-revealed .t-skel-content {
   opacity: 1;
-  filter: blur(0);
-  pointer-events: auto;
 }
 .t-skel-skeleton.is-pulsing > * {
   animation: t-skel-pulse 1000ms ease-in-out infinite;
