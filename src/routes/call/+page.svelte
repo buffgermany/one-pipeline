@@ -900,19 +900,35 @@
     <div class="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col items-center">
       <div class="w-full max-w-6xl flex flex-col gap-4 pb-8 my-auto">
         
-        <!-- FULL-WIDTH TOP HERO CARD: LEAD IDENTITY & HIGH-VALUE SALES OPPORTUNITY BADGES -->
-        <div class="bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] p-5 flex flex-col gap-3 shadow-sm">
-          
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            
-            <div class="flex flex-col gap-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap text-xs">
-                <span class="font-bold text-[var(--color-accent-emerald)] bg-[var(--color-emerald-tint)] px-2 py-0.5 rounded border border-[var(--color-emerald-border)]">
-                  Nächster Lead
-                </span>
-                <span class="text-[var(--color-ink-muted)] font-medium">{lead?.category || lead?.industry || 'B2B Lead'}</span>
+        <div class="t-skel {!loadingLead ? 'is-revealed' : ''} w-full">
+          <!-- SKELETON PLACEHOLDER DURING LEAD FETCH -->
+          <div class="t-skel-skeleton is-pulsing flex flex-col gap-4">
+            <div class="bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] p-5 flex flex-col gap-3 shadow-sm">
+              <div class="h-7 bg-[var(--color-surface-lift)] rounded w-1/3"></div>
+              <div class="h-4 bg-[var(--color-surface-lift)] rounded w-1/2"></div>
+              <div class="h-4 bg-[var(--color-surface-lift)] rounded w-1/4"></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              <div class="lg:col-span-6 bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] h-72 p-5"></div>
+              <div class="lg:col-span-6 bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] h-72 p-5"></div>
+            </div>
+          </div>
 
-                {#if lead?.isAd}
+          <!-- REAL REVEALED LEAD CONTENT -->
+          <div class="t-skel-content flex flex-col gap-4">
+            <!-- FULL-WIDTH TOP HERO CARD: LEAD IDENTITY & HIGH-VALUE SALES OPPORTUNITY BADGES -->
+            <div class="bg-[var(--color-surface-panel)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)] p-5 flex flex-col gap-3 shadow-sm">
+              
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                
+                <div class="flex flex-col gap-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap text-xs">
+                    <span class="font-bold text-[var(--color-accent-emerald)] bg-[var(--color-emerald-tint)] px-2 py-0.5 rounded border border-[var(--color-emerald-border)]">
+                      Nächster Lead
+                    </span>
+                    <span class="text-[var(--color-ink-muted)] font-medium">{lead?.category || lead?.industry || 'B2B Lead'}</span>
+
+                    {#if lead?.isAd}
                   <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30">
                     <Megaphone size={12} class="shrink-0" />
                     <span>Google Ads aktiv</span>
@@ -1203,11 +1219,12 @@
           <div class="lg:col-span-6">
             <WebsiteAuditPanel auditData={lead?.auditData} auditScore={lead?.auditScore} />
           </div>
-
+          </div>
         </div>
 
       </div>
     </div>
+  </div>
 
   <!-- ULTRA-INTUITIVE LIVE CALL COCKPIT (1-Click Situational Triggers) -->
   {:else}
